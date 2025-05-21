@@ -1,4 +1,4 @@
-const pool = require("../../db")
+const pool = require("../db")
 const queries = require('../queries/role_queries')
 
 
@@ -108,7 +108,6 @@ async function getRolesByModules(){
 
 module.exports = {
                     getModules,
-                    getModuleActions,
                     createRole,
                     getRoles,
                     getRoleNameById, 
@@ -118,10 +117,4 @@ module.exports = {
                     getRolePermissionNames,
                     getRolesByModules,
                     changeRoleVisibility,
-                    changeUserVisibility,
-                    getVisibleUsers,
-                    createRoleUser,
-                    changeUserStatus,
-                    getUserById,
-                    updateUser
                 }
