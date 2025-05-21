@@ -159,45 +159,45 @@ router.post("/login", async (req, res) => {
 
 /**
  * @swagger
- * /logout
- * post:
- *  summary: Logout user and clear cookie and delete refreshToken
- *  description: The refresh token is deleted from the database and the httponly cookie carrying the refreshToken is cleared
- *  tags:
- *    - Authentication
- *  security:
- *    - cookieAuth: []
- *  responses:
- *    200:
- *      description: Logged out successfully
- *      content: 
- *        application/json:
- *          schema:
- *            type: object
- *            properties:
- *              message: 
- *                type: string
- *                example: Logged out successfully
- *    403:
- *      description: Token not found
- *      content:
- *        application/json:
- *          schema:
- *            type: object
- *            properties:
- *              error:
- *                type: string
- *                example: Refresh token required
- *    500:
- *      description: DB query - token deletion failure
- *      content:
- *        application/json:
- *          schema:
- *            type: object
- *            properties:
- *              error:
- *                type: string
- *                example: Token deletion failure
+ * /logout:
+ *    post:
+ *      summary: Logout user and clear cookie and delete refreshToken
+ *      description: The refresh token is deleted from the database and the httponly cookie carrying the refreshToken is cleared
+ *      tags:
+ *        - Authentication
+ *      security:
+ *        - cookieAuth: []
+ *      responses:
+ *        200:
+ *          description: Logged out successfully
+ *          content: 
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message: 
+ *                    type: string
+ *                    example: Logged out successfully
+ *        403:
+ *          description: Token not found
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  error:
+ *                    type: string
+ *                    example: Refresh token required
+ *        500:
+ *          description: DB query - token deletion failure
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  error:
+ *                    type: string
+ *                    example: Token deletion failure
  */
 router.post("/logout", async (req, res) => {
   const refreshToken = req.cookies.refreshToken; // Read from cookie
