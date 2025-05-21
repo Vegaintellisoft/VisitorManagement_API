@@ -1,0 +1,109 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const queries = require("../queries/auth_queries");
+const pool = require("../db");
+
+function getDateTimeString() {
+  const today = new Date();
+  const todayLocaleDateString = today.toLocaleString();
+  return todayLocaleDateString;
+}
+
+async function loginUser(emailID, password) {
+  try {
+    const [users] = await pool.query(queries.verifyUser, [emailID]);
+    if (users.length === 0) {
+      console.log("user not found");
+      throw { status: 401, message: "User not found" };
+    }
+    const user = users[0];
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      throw { status: 401, message: "Incorrect Password!" };
+    }
+    const accessToken = jwt.sign(
+      {
+        userId: user.id,
+        roleId: user.role_id,
+        emailId: emailID,
+        currDate: getDateTimeString(),
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+    const refreshToken = jwt.sign(
+      {
+        userId: user.id,
+        roleId: user.role_id,
+        emailId: emailID,
+        currDate: getDateTimeString(),
+      },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    const [resp] = await pool.execute(queries.updateRefreshToken, [
+      user.id,
+      refreshToken,
+    ]);
+    return {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      user_name: user.first_name,
+      roleId: user.role_id,
+    };
+  } catch (error) {
+    console.log(error.message);
+    throw { status: 500, message: "Login Failed" };
+  }
+}
+
+async function logoutUser(refreshToken) {
+  try {
+    await pool.execute(queries.deleteRefreshToken, [refreshToken]);
+  } catch (error) {
+    throw new Error("Token Deletion Failed");
+  }
+}
+
+async function refreshUserToken(refreshToken) {
+  try {
+    const [tokens] = await pool.execute(queries.getRefreshToken, [
+      refreshToken,
+    ]);
+    if (tokens.length === 0) throw new Error("Invalid refresh token");
+    jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+      async (err, decoded) => {
+        if (err) {
+          if (err.name === "TokenExpiredError") {
+            await logoutUser(refreshToken);
+            throw {
+              status: 403,
+              message: "Refresh token expired, please log in again",
+            };
+          }
+          throw { status: 403, message: "Invalid refresh token" };
+        }
+
+        const newAccessToken = jwt.sign(
+          {
+            userId: decoded.userId,
+            roleId: decoded.roleId,
+            emailId: decoded.emailId,
+            currDate: getDateTimeString(),
+          },
+          process.env.ACCESS_TOKEN_SECRET,
+          { expiresIn: "1d" }
+        );
+
+        res.json({ accessToken: newAccessToken, ok: true });
+      }
+    );
+  } catch (error) {
+    throw { status: 500, message: "Token Deletion Failed" };
+  }
+}
+
+module.exports = { loginUser, logoutUser, refreshUserToken };
