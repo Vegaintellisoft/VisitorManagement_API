@@ -1,9 +1,9 @@
 const db = require("../db");
-const queries = require("../queries/company_query");
+const queries = require("../queries/company_queries");
 
 exports.getAll = async () => {
   try {
-    const [rows] = await db.promise().query(queries.GET_ALL_COMPANIES);
+    const [rows] = await db.promise().query(queries.getAllCompanies);
     return rows;
   } catch (error) {
     throw { status: 500, message: "Failed to fetch companies" };
@@ -12,7 +12,7 @@ exports.getAll = async () => {
 
 exports.getById = async (id) => {
   try {
-    const [rows] = await db.promise().query(queries.GET_COMPANY_BY_ID, [id]);
+    const [rows] = await db.promise().query(queries.getCompanyById, [id]);
     if (rows.length === 0) {
       throw { status: 404, message: 'Company not found' };
     }
@@ -25,7 +25,7 @@ exports.getById = async (id) => {
 
 exports.create = async (name, status) => {
   try {
-    const [result] = await db.promise().query(queries.CREATE_COMPANY, [name, status]);
+    const [result] = await db.promise().query(queries.createCompany, [name, status]);
     return { id: result.insertId, name, status };
   } catch (error) {
     throw { status: 500, message: "Failed to create company" };
@@ -34,7 +34,7 @@ exports.create = async (name, status) => {
 
 exports.update = async (id, name, status) => {
   try {
-    const [result] = await db.promise().query(queries.UPDATE_COMPANY, [name, status, id]);
+    const [result] = await db.promise().query(queries.updateCompany, [name, status, id]);
     if (result.affectedRows === 0) throw { status: 404, message: "Company not found" };
     return { id, name, status };
   } catch (error) {

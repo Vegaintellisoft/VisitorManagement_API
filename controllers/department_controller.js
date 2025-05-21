@@ -1,4 +1,5 @@
-const departmentQueries = require('./department_queries');
+const departmentQueries = require('../queries/department_queries');
+const db = require("../db");
 
 const getAll = async () => {
   try {
