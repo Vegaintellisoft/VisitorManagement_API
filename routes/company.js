@@ -1,71 +1,94 @@
-const express = require('express');
-const router = express.Router();
-const db = require('../db');
-// const verifyToken = require('../middleware/auth'); // Uncomment to enable token protection
+const express = require("express");
+const companyController = require("../controllers/company_controller");
 
-/**
- * @swagger
- * tags:
- *   name: Companies
- *   description: Company management endpoints
- */
+const router = express.Router();
 
 /**
  * @swagger
  * /companies:
  *   get:
  *     summary: Get all companies
- *     tags: [Companies]
+ *     tags:
+ *       - Companies
  *     responses:
  *       200:
- *         description: A list of all companies
+ *         description: List of companies
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *       500:
+ *         description: Server error
  */
-router.get('/', (req, res) => {
-  db.query('SELECT * FROM companies', (err, results) => {
-    if (err) return res.status(500).json(err);
-    res.json(results);
-  });
+router.get("/", async (req, res) => {
+  try {
+    const companies = await companyController.getAll();
+    res.status(200).json(companies);
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
 });
 
 /**
  * @swagger
  * /companies/{id}:
  *   get:
- *     summary: Get a single company by ID
- *     tags: [Companies]
+ *     summary: Get a company by ID
+ *     tags:
+ *       - Companies
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: Numeric ID of the company to get
  *         schema:
  *           type: integer
  *     responses:
  *       200:
- *         description: A company object
+ *         description: Company data
  *         content:
  *           application/json:
  *             schema:
  *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *       404:
+ *         description: Company not found
+ *       500:
+ *         description: Server error
  */
-router.get('/:id', (req, res) => {
-  db.query('SELECT * FROM companies WHERE id = ?', [req.params.id], (err, results) => {
-    if (err) return res.status(500).json(err);
-    res.json(results[0]);
-  });
+router.get("/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const company = await companyController.getById(id);
+    res.status(200).json(company);
+  } catch (error) {
+    // If company not found, status will be 404 with message "Company not found"
+    res.status(error.status || 500).json({ error: error.message || "Server error" });
+  }
 });
 
 /**
  * @swagger
  * /companies:
  *   post:
- *     summary: Add a new company
- *     tags: [Companies]
+ *     summary: Create a new company
+ *     tags:
+ *       - Companies
  *     requestBody:
  *       required: true
  *       content:
@@ -78,30 +101,49 @@ router.get('/:id', (req, res) => {
  *             properties:
  *               name:
  *                 type: string
+ *                 example: Example Company
  *               status:
  *                 type: string
+ *                 example: Active
  *     responses:
  *       201:
- *         description: Company created successfully
+ *         description: Company created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *       500:
+ *         description: Server error
  */
-router.post('/', (req, res) => {
+router.post("/", async (req, res) => {
   const { name, status } = req.body;
-  db.query('INSERT INTO companies (name, status) VALUES (?, ?)', [name, status], (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.status(201).json({ id: result.insertId });
-  });
+  try {
+    const newCompany = await companyController.create(name, status);
+    res.status(201).json(newCompany);
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
 });
 
 /**
  * @swagger
  * /companies/{id}:
  *   put:
- *     summary: Update a company
- *     tags: [Companies]
+ *     summary: Update an existing company
+ *     tags:
+ *       - Companies
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: Numeric ID of the company to update
  *         schema:
  *           type: integer
  *     requestBody:
@@ -116,18 +158,38 @@ router.post('/', (req, res) => {
  *             properties:
  *               name:
  *                 type: string
+ *                 example: Updated Company Name
  *               status:
  *                 type: string
+ *                 example: Inactive
  *     responses:
  *       200:
- *         description: Company updated successfully
+ *         description: Company updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *       404:
+ *         description: Company not found
+ *       500:
+ *         description: Server error
  */
-router.put('/:id', (req, res) => {
+router.put("/:id", async (req, res) => {
+  const id = req.params.id;
   const { name, status } = req.body;
-  db.query('UPDATE companies SET name = ?, status = ? WHERE id = ?', [name, status, req.params.id], (err) => {
-    if (err) return res.status(500).json(err);
-    res.json({ message: 'Company updated successfully' });
-  });
+  try {
+    const updatedCompany = await companyController.update(id, name, status);
+    res.status(200).json(updatedCompany);
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
 });
 
 module.exports = router;
