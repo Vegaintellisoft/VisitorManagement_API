@@ -21,8 +21,51 @@ const authenticateToken = (req, res, next) => {
 /**
  * @swagger
  * /list_modules:
- * 
+ *   get:
+ *     summary: Get list of available modules
+ *     description: Returns a list of all modules. Requires a valid access token.
+ *     tags:
+ *       - Modules
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of modules retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   module_id:
+ *                     type: integer
+ *                     example: 1
+ *                   module_name:
+ *                     type: string
+ *                     example: User Management
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Database Operation failed
  */
+
 router.get('/list_modules',authenticateToken, async (req,res)=>{
     try{
         modules = await role_controller.getModules()
@@ -32,15 +75,49 @@ router.get('/list_modules',authenticateToken, async (req,res)=>{
     }
 })
 
-router.get('/module/actions/:module',authenticateToken, async (req,res)=>{
-    mod = req.params.module
-    try{
-        actions = await role_controller.getModuleActions(mod)
-        res.json(actions)
-    }catch(err){
-        res.status(err.status||500).json({error: err.message})
-    }
-})
+/**
+ * @swagger
+ * /add:
+ *   post:
+ *    summary: Create Role
+ *    description: Create a role provided a list of permissions and role name
+ *    tag: 
+ *      - Role Management
+ *    security:
+ *      - bearerAuth:[]
+ *    responses:
+ *       200:
+ *         description: Role created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               porperties:
+ *                 message:
+ *                   type: string
+ *                   example: Role Created Successfully
+ *       401:
+ *         description: Invalid email or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Incorrect Password!
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Login Failed
+ *   
+ */
 
 router.post('/add',authenticateToken, async (req,res)=>{
     const {permissions,role_name} = req.body
@@ -52,6 +129,57 @@ router.post('/add',authenticateToken, async (req,res)=>{
     }
 })
 
+/**
+ * @swagger
+ * /list_roles:
+ *   get:
+ *     summary: Retrieve list of visible roles
+ *     description: Returns all roles from the database where `visibility = true`. Requires a valid access token.
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of roles retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   role_name:
+ *                     type: string
+ *                     example: Admin
+ *                   visibility:
+ *                     type: boolean
+ *                     example: true
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Database Operation failed
+ */
+
 router.get('/list_roles',authenticateToken, async (req,res)=>{
     try{
         roles = await role_controller.getRoles()
@@ -60,6 +188,75 @@ router.get('/list_roles',authenticateToken, async (req,res)=>{
         res.status(err.status||500).json({error: err.message})
     }
 })
+
+/**
+ * @swagger
+ * /change_status:
+ *   post:
+ *     summary: Change the status of a role
+ *     description: Updates the `status` field of a role by role ID. Requires authentication.
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - role_id
+ *               - status
+ *             properties:
+ *               role_id:
+ *                 type: integer
+ *                 example: 2
+ *               status:
+ *                 type: boolean
+ *                 example: false
+ *     responses:
+ *       200:
+ *         description: Role status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               example:
+ *                 affectedRows: 1
+ *                 changedRows: 1
+ *                 fieldCount: 0
+ *       400:
+ *         description: Bad request (missing or invalid body parameters)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid input
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal Server Error - DB failure
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Database Operation failed
+ */
 
 router.post('/change_status',authenticateToken, async (req,res)=>{
     const {role_id,status} = req.body
@@ -71,6 +268,67 @@ router.post('/change_status',authenticateToken, async (req,res)=>{
     }
 })
 
+/**
+ * @swagger
+ * /change_visibility/{rid}:
+ *   get:
+ *     summary: Change role visibility to false
+ *     description: Sets the `visibility` of a role to `false` based on the provided role ID. Requires a valid access token.
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: rid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID to update
+ *         example: 3
+ *     responses:
+ *       200:
+ *         description: Role visibility updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               example:
+ *                 affectedRows: 1
+ *                 changedRows: 1
+ *                 fieldCount: 0
+ *       400:
+ *         description: Invalid role ID format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid role ID
+ *       401:
+ *         description: Unauthorized - Missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal server error during database operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Database Operation failed
+ */
+
 router.get('/change_visibility/:rid', authenticateToken, async (req,res)=>{
     const role_id = req.params.rid
     try{
@@ -80,6 +338,77 @@ router.get('/change_visibility/:rid', authenticateToken, async (req,res)=>{
         res.status(err.status||500).json({error: err.message})
     }
 })
+
+/**
+ * @swagger
+ * /modify_permissions:
+ *   post:
+ *     summary: Modify role permissions
+ *     description: Replaces all permissions for a given role ID with the new list of permission IDs. Requires authentication.
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - role_id
+ *               - permissionIds
+ *             properties:
+ *               role_id:
+ *                 type: integer
+ *                 example: 2
+ *               permissionIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 example: [1, 3, 5]
+ *     responses:
+ *       200:
+ *         description: Role permissions updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               example:
+ *                 affectedRows: 3
+ *                 changedRows: 3
+ *                 fieldCount: 0
+ *       400:
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid input
+ *       401:
+ *         description: Unauthorized - Missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal server error during DB operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Database Operation failed
+ */
 
 router.post('/modify_permissions', authenticateToken, async (req,res)=>{
     const {role_id, permissionIds} = req.body
@@ -91,6 +420,66 @@ router.post('/modify_permissions', authenticateToken, async (req,res)=>{
     }
 })
 
+/**
+ * @swagger
+ * /get_role_permission_ids/{rid}:
+ *   get:
+ *     summary: Get permission IDs for a role
+ *     description: Retrieves a list of permission IDs associated with a given role ID. Requires authentication.
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: rid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID
+ *         example: 2
+ *     responses:
+ *       200:
+ *         description: List of permission IDs for the given role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: integer
+ *               example: [1, 3, 5]
+ *       400:
+ *         description: Invalid role ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid role ID
+ *       401:
+ *         description: Unauthorized - Missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal server error during database operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Database Operation failed
+ */
+
 router.get('/get_role_permission_ids/:rid',authenticateToken,async (req,res)=>{
     const role_id = req.params.rid
     try{
@@ -100,6 +489,64 @@ router.get('/get_role_permission_ids/:rid',authenticateToken,async (req,res)=>{
         res.status(err.status||500).json({error: err.message})
     }
 })
+
+/**
+ * @swagger
+ * /get_role_name/{rid}:
+ *   get:
+ *     summary: Get role name by ID
+ *     description: Retrieves the role name associated with a specific role ID. Requires authentication.
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: rid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID
+ *         example: 4
+ *     responses:
+ *       200:
+ *         description: Role name retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: "Administrator"
+ *       400:
+ *         description: Invalid role ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid role ID
+ *       401:
+ *         description: Unauthorized - Missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal server error during database operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Database Operation failed
+ */
 
 router.get('/get_role_name/:rid',authenticateToken,async (req,res)=>{
     const role_id = req.params.rid
@@ -111,6 +558,66 @@ router.get('/get_role_name/:rid',authenticateToken,async (req,res)=>{
     }
 })
 
+/**
+ * @swagger
+ * /get_role_permission_names/{rid}:
+ *   get:
+ *     summary: Get permission names for a role
+ *     description: Retrieves a list of permission names associated with the specified role ID. Requires authentication.
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: rid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID
+ *         example: 3
+ *     responses:
+ *       200:
+ *         description: Array of permission names
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *               example: ["Create User", "Edit Role", "View Dashboard"]
+ *       400:
+ *         description: Invalid role ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid role ID
+ *       401:
+ *         description: Unauthorized - Missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal server error during DB operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Database Operation failed
+ */
+
 router.get('/get_role_permission_names/:rid',authenticateToken,async (req,res)=>{
     const role_id = req.params.rid
     try{
@@ -121,72 +628,47 @@ router.get('/get_role_permission_names/:rid',authenticateToken,async (req,res)=>
     }
 })
 
+/**
+ * @swagger
+ * /get_roles_by_modules:
+ *   get:
+ *     summary: Get roles grouped by modules
+ *     description: Retrieves a list of modules and the roles associated with each module.
+ *     tags:
+ *       - Roles
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved roles grouped by modules
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   module_name:
+ *                     type: string
+ *                     example: "User Management"
+ *                   roles:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                     example: ["Admin", "Manager"]
+ *       500:
+ *         description: Internal server error during database operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Database Operation failed
+ */
+
 router.get('/get_roles_by_modules', async (req,res)=>{
     try{
         resp = await role_controller.getRolesByModules()
-        res.json(resp)
-    }catch(err){
-        res.status(err.status||500).json({error: err.message})
-    }
-})
-
-router.get('/users/list', authenticateToken, async (req,res)=>{
-    try{
-        resp = await role_controller.getVisibleUsers()
-        res.json(resp)
-    }catch(err){
-        res.status(err.status||500).json({error: err.message})
-    }
-})
-
-router.post('/users/create',authenticateToken, async (req,res)=>{
-    const {first_name,last_name, user_name, email, phone, password, role_id} = req.body
-    try{
-        resp = await role_controller.createRoleUser(first_name,last_name, user_name, email, phone, password, role_id);
-        res.json(resp)
-    }catch(err){
-        res.status(err.status||500).json({error:err.message})
-    }
-})
-
-router.post('/users/change_status',authenticateToken, async (req,res)=>{
-    const {user_id,status} = req.body
-    try{
-        resp = await role_controller.changeUserStatus(user_id, status)
-        res.json(resp)
-    }catch(err){
-        res.status(err.status||500).json({error: err.message})
-    }
-})
-
-router.delete('/users/delete/:uid', authenticateToken, async (req,res) =>{
-    const uid = req.params.uid
-    try{
-        resp = await role_controller.changeUserVisibility(uid);
-        res.json(resp)
-    }catch(err){
-        res.status(err.status||500).json({error: err.message})
-    }
-})
-
-router.get('/users/get_user_details/:uid',authenticateToken, async (req,res)=>{
-    const uid = req.params.uid
-    try{
-        resp = await role_controller.getUserById(uid);
-        res.json(resp)
-    }catch(err){
-        res.status(err.status||500).json({error: err.message})
-    }
-})
-
-router.patch('/users/update/:uid',authenticateToken,async (req,res)=>{
-    const uid = req.params.uid
-    const updates = req.body
-    if (!Object.keys(updates).length) {
-        return res.status(400).json({ error: 'No fields provided for update' });
-      }
-    try{
-        resp = await role_controller.updateUser(uid,updates);
         res.json(resp)
     }catch(err){
         res.status(err.status||500).json({error: err.message})

@@ -11,15 +11,6 @@ async function getModules(){
     }
 }
 
-async function getModuleActions(module) {
-    try{
-        [res] = await pool.query(queries.getModuleActions,[module]);
-        return res
-    }catch(error){
-        throw ({status:500, message: 'Database Operation failed'})
-    }
-}
-
 async function createRole(roleName, permissionIds){
     try{
         resp = await pool.query(queries.addRole,[roleName]);
@@ -95,7 +86,6 @@ async function changeRoleVisibility(rid){
         throw ({status:500, message: 'Database Operation failed'})
     }
 }
-
 
 async function getRoleNameById(rid){
     try{
