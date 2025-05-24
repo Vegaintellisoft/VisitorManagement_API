@@ -54,16 +54,25 @@ app.use(bodyParser.json());
 
 const companyRoutes = require("./routes/company");
 const departmentRoutes = require("./routes/department");
-const openRoutes = require("./routes/dropdown");
+//const openRoutes = require("./routes/dropdown1");
 const designationRoutes = require("./routes/designation");
 const employeeRoutes = require("./routes/employees");
 const uploadRoutes = require("./routes/upload");
 const roleRoutes = require("./routes/role_routes");
 const authRoutes = require("./routes/auth_routes");
+//const visitorRoutes = require('./routes/visitor');
+const dropdownRoutes = require('./routes/dropdownRoutes');
+//const visitorRoutes = require('./routes/visitor');
+const visitorRoutes = require('./routes/visitor');
 
+app.use(express.json());
+app.use('/visitor', visitorRoutes);
+app.use('/api', dropdownRoutes);
+//app.use('/api/visitor', visitorRoutes);
+app.use('/api', companyRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/designations", designationRoutes);
-app.use("/api/open", openRoutes);
+//app.use("/api/open", openRoutes);
 app.use("/companies", companyRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api", uploadRoutes);

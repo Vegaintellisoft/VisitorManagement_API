@@ -1,93 +1,186 @@
-const db = require('../db');
-const QRCode = require('qrcode');
-const queries = require('../queries/visitorQueries');
+const conn = require('../db');
+const queries = require('../queries/visitor_queries');
+const qrcode = require('qrcode');
 
-exports.getAllVisitors = (req, res) => {
-  db.query(queries.GET_ALL_VISITORS, (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.json(result);
+// Generate QR code for visitor
+const generateQrCode = (visitorId) => {
+  return new Promise((resolve, reject) => {
+    const qrData = `visitor-${visitorId}`;
+    qrcode.toDataURL(qrData, (err, qrCodeUrl) => {
+      if (err) reject(err);
+      resolve(qrCodeUrl);
+    });
   });
 };
 
-exports.getVisitorById = (req, res) => {
-  db.query(queries.GET_VISITOR_BY_ID, [req.params.id], (err, result) => {
+const sendOtp = (req, res) => {
+  const { phone } = req.body;
+
+  // Generate 4-digit OTP
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+  // Set expiry time to 30 seconds from now
+  const expiry = new Date(Date.now() + 60 * 1000);
+
+  conn.query(queries.sendOtpQuery, [phone, otp, expiry, otp, expiry], (err) => {
     if (err) return res.status(500).send(err);
-    res.json(result[0]);
+    res.send({ message: 'OTP sent', otp }); // dev only
   });
 };
 
-exports.createVisitor = async (req, res) => {
-  const {
-    first_name, last_name, email, phone, gender,
-    company_id, department_id, designation_id, whom_to_meet,
-    purpose, aadhar_no, address
-  } = req.body;
+const verifyOtp = (req, res) => {
+  const { phone, otp } = req.body;
 
-  const image = req.file?.filename || null;
+  conn.query(queries.selectOtpQuery, [phone], (err, results) => {
+    if (err || results.length === 0) return res.status(400).send({ message: 'No record found' });
 
-  const values = [
-    first_name, last_name, email, phone, gender,
-    company_id, department_id, designation_id, whom_to_meet,
-    purpose, aadhar_no, address, image
-  ];
+    const { otp: dbOtp, otp_expiry } = results[0];
+    if (dbOtp !== otp || new Date(otp_expiry) < new Date()) {
+      return res.status(400).send({ message: 'Invalid or expired OTP' });
+    }
 
-  db.query(queries.CREATE_VISITOR, values, async (err, result) => {
-    if (err) return res.status(500).send(err);
-    const visitorId = result.insertId;
-    const qrText = `http://localhost:3001/api/visitors/signout/${visitorId}`;
-    const qr = await QRCode.toDataURL(qrText);
-    res.json({ visitorId, qr });
+    conn.query(queries.verifyOtpQuery, [phone], (err) => {
+      if (err) return res.status(500).send(err);
+
+      conn.query('SELECT id FROM temp_visitors WHERE phone = ?', [phone], (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.send({ message: 'OTP verified', temp_visitor_id: result[0].id });
+      });
+    });
   });
 };
 
-exports.updateVisitor = (req, res) => {
-  const { id } = req.params;
-  const {
-    first_name, last_name, email, phone, gender,
-    company_id, department_id, designation_id, whom_to_meet,
-    purpose, aadhar_no, address
-  } = req.body;
+// Submit visitor details and generate QR code\
+const submitDetails = async (req, res) => {
+  const data = req.body;
+  const imagePath = req.file ? req.file.path : null;
 
-  const image = req.file?.filename;
-  let sql = queries.UPDATE_VISITOR_BASE;
-  const values = [
-    first_name, last_name, email, phone, gender,
-    company_id, department_id, designation_id, whom_to_meet,
-    purpose, aadhar_no, address
-  ];
+  // Verify OTP and fetch visitor details from temp table
+  conn.query(queries.selectTempVisitorByPhone, [data.phone], async (err, results) => {
+    if (err || results.length === 0) return res.status(400).send({ message: 'No record found' });
 
-  if (image) {
-    sql += `, image = ?`;
-    values.push(image);
-  }
+    const temp = results[0];
+    if (temp.otp_verified !== 1) {
+      return res.status(403).send({ message: 'Phone not verified' });
+    }
 
-  sql += ` WHERE id = ?`;
-  values.push(id);
+    // Update temp visitor data
+    const updateValues = [
+      data.first_name, data.last_name, data.email, data.gender,
+      data.company_id, data.department_id, data.designation_id,
+      data.whom_to_meet, data.purpose, data.aadhar_no, data.address,
+      imagePath, data.phone
+    ];
 
-  db.query(sql, values, (err) => {
-    if (err) return res.status(500).send(err);
-    res.json({ message: 'Visitor updated successfully' });
+    conn.query(queries.updateTempVisitor, updateValues, (err) => {
+      if (err) return res.status(500).send(err);
+
+      // Insert into the main visitor table
+      const insertValues = [
+        data.first_name, data.last_name, data.email, data.phone, data.gender,
+        data.company_id, data.department_id, data.designation_id, data.whom_to_meet,
+        data.purpose, data.aadhar_no, data.address, imagePath,
+        temp.otp, 1
+      ];
+
+      conn.query(queries.insertIntoVisitorMain, insertValues, async (err, result) => {
+        if (err) return res.status(500).send(err);
+
+        const visitorId = result.insertId;
+
+        // Generate QR code for the visitor
+        const qrCode = await generateQrCode(visitorId);
+
+        // Update the visitor record with the generated QR code
+        conn.query('UPDATE visitors SET qr_code = ? WHERE id = ?', [qrCode, visitorId], (err) => {
+          if (err) return res.status(500).send(err);
+          res.send({ message: 'Visitor data submitted and QR code generated', qr_code: qrCode });
+        });
+      });
+    });
   });
 };
 
-exports.toggleVisitorStatus = (req, res) => {
-  db.query(queries.TOGGLE_VISITOR_STATUS, [req.params.id], (err) => {
-    if (err) return res.status(500).send(err);
-    res.json({ message: 'Status toggled' });
+// Handle QR scan (Check-in and Check-out)
+const handleQrScan = (req, res) => {
+  const { qrCode } = req.body;  // The scanned QR code data
+  const visitorId = qrCode.split('-')[1]; // Extract visitor ID from the QR code data
+
+  // First, check if visitor exists and get their current status
+  conn.query('SELECT * FROM visitors WHERE id = ?', [visitorId], (err, results) => {
+    if (err) return res.status(500).send({ message: 'Database error', error: err });
+    if (results.length === 0) return res.status(404).send({ message: 'Visitor not found' });
+
+    const visitor = results[0];
+    const currentTime = moment();
+
+    // Check if QR is already expired (i.e., check-in was done more than 24 hours ago)
+    if (visitor.qr_status === 'checked_in' && moment(visitor.sign_in_time).add(24, 'hours').isBefore(currentTime)) {
+      // QR expired after 24 hours, mark as expired
+      conn.query('UPDATE visitors SET qr_status = "expired" WHERE id = ?', [visitorId], (err) => {
+        if (err) return res.status(500).send({ message: 'Error expiring QR code', error: err });
+        return res.send({ message: 'QR code expired after 24 hours' });
+      });
+      return;
+    }
+
+    // Handle first scan (Check-in)
+    if (visitor.qr_status === 'active') {
+      const signInTime = currentTime.format('YYYY-MM-DD HH:mm:ss');
+      conn.query('UPDATE visitors SET qr_status = "checked_in", sign_in_time = ? WHERE id = ?', [signInTime, visitorId], (err) => {
+        if (err) return res.status(500).send({ message: 'Error during check-in', error: err });
+        return res.send({ message: 'Check-in successful', sign_in_time: signInTime });
+      });
+    }
+
+    // Handle second scan (Check-out)
+    else if (visitor.qr_status === 'checked_in') {
+      const signOutTime = currentTime.format('YYYY-MM-DD HH:mm:ss');
+      conn.query('UPDATE visitors SET qr_status = "checked_out", sign_out_time = ? WHERE id = ?', [signOutTime, visitorId], (err) => {
+        if (err) return res.status(500).send({ message: 'Error during check-out', error: err });
+        return res.send({ message: 'Check-out successful', sign_out_time: signOutTime });
+      });
+    }
   });
 };
 
-exports.generateVisitorCard = (req, res) => {
-  const qrText = `http://localhost:3001/api/visitors/signout/${req.params.id}`;
-  QRCode.toDataURL(qrText, (err, qr) => {
-    if (err) return res.status(500).send(err);
-    res.json({ qr });
+
+const getAllVisitors = (req, res) => {
+  // Execute the query to get all visitors
+  conn.query(queries.getAllVisitorsQuery, (err, results) => {
+    if (err) {
+      // Handle the error and send a 500 response
+      return res.status(500).send({ message: 'Error fetching data', error: err });
+    }
+
+    // Return the result if the query is successful
+    res.json({ message: 'Data retrieved successfully', data: results });
   });
 };
 
-exports.signoutVisitor = (req, res) => {
-  db.query(queries.SIGNOUT_VISITOR, [req.params.id], (err) => {
-    if (err) return res.status(500).send(err);
-    res.send(`<h2>Visitor ID ${req.params.id} signed out successfully. QR is now invalid.</h2>`);
+// Controller to fetch visitor details (visitor ID, name, employee name, check-in, check-out, status, and QR code)
+const getVisitorDetails = (req, res) => {
+  const query = queries.getVisitorDetailsQuery;
+
+  conn.query(query, (err, results) => {
+    if (err) {
+      console.error('DB Error in getVisitorDetails:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'No visitor details found' });
+    }
+
+    res.json({ message: 'Visitor details retrieved successfully', data: results });
   });
+};
+
+module.exports = {
+  getVisitorDetails,
+  getAllVisitors,
+  sendOtp,
+  verifyOtp,
+  submitDetails,
+  handleQrScan
 };

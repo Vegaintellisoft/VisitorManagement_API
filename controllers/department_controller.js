@@ -1,49 +1,50 @@
-const departmentQueries = require('../queries/department_queries');
 const db = require("../db");
+const queries = require("../queries/department_queries");
 
-const getAll = async () => {
+exports.getAll = async () => {
   try {
-    return await departmentQueries.getAllDepartments();
+    const [rows] = await db.promise().query(queries.getAllDepartments);
+    return rows;
   } catch (error) {
-    throw error;
+    throw { status: 500, message: "Failed to fetch departments" };
   }
 };
 
-const getById = async (id) => {
+exports.getById = async (id) => {
   try {
-    const department = await departmentQueries.getDepartmentById(id);
-    if (!department) {
-      const error = new Error('Department not found');
-      error.status = 404;
-      throw error;
-    }
-    return department;
+    const [rows] = await db.promise().query(queries.getDepartmentById, [id]);
+    if (rows.length === 0) throw { status: 404, message: "Department not found" };
+    return rows[0];
   } catch (error) {
-    throw error;
+    throw { status: error.status || 500, message: error.message || "Internal server error" };
   }
 };
 
-const create = async (company_id, name, status) => {
+exports.create = async (company_id, name, status) => {
   try {
-    const id = await departmentQueries.createDepartment(company_id, name, status);
-    return { id };
+    const [result] = await db.promise().query(queries.createDepartment, [company_id, name, status]);
+    return { id: result.insertId, company_id, name, status };
   } catch (error) {
-    throw error;
+    throw { status: 500, message: "Failed to create department" };
   }
 };
 
-const update = async (id, company_id, name, status) => {
+exports.update = async (id, company_id, name, status) => {
   try {
-    await departmentQueries.updateDepartment(id, company_id, name, status);
-    return { message: 'Department updated' };
+    const [result] = await db.promise().query(queries.updateDepartment, [company_id, name, status, id]);
+    if (result.affectedRows === 0) throw { status: 404, message: "Department not found" };
+    return { id, company_id, name, status };
   } catch (error) {
-    throw error;
+    throw { status: error.status || 500, message: error.message || "Failed to update department" };
   }
 };
 
-module.exports = {
-  getAll,
-  getById,
-  create,
-  update,
+exports.delete = async (id) => {
+  try {
+    const [result] = await db.promise().query(queries.deleteDepartment, [id]);
+    if (result.affectedRows === 0) throw { status: 404, message: "Department not found" };
+    return { message: "Department deleted" };
+  } catch (error) {
+    throw { status: error.status || 500, message: error.message || "Failed to delete department" };
+  }
 };

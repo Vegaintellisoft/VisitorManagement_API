@@ -1,13 +1,29 @@
+const getAllDepartments = `
+  SELECT d.*, c.name as company_name 
+  FROM departments d 
+  JOIN companies c ON d.company_id = c.id;
+`;
+
+const getDepartmentById = `
+  SELECT * FROM departments WHERE id = ?;
+`;
+
+const createDepartment = `
+  INSERT INTO departments (company_id, name, status) VALUES (?, ?, ?);
+`;
+
+const updateDepartment = `
+  UPDATE departments SET company_id = ?, name = ?, status = ? WHERE id = ?;
+`;
+
+const deleteDepartment = `
+  DELETE FROM departments WHERE id = ?;
+`;
+
 module.exports = {
-  GET_ALL_DEPARTMENTS: `
-    SELECT d.*, c.name as company_name
-    FROM departments d
-    JOIN companies c ON d.company_id = c.id
-  `,
-
-  GET_DEPARTMENT_BY_ID: "SELECT * FROM departments WHERE id = ?",
-
-  CREATE_DEPARTMENT: "INSERT INTO departments (company_id, name, status) VALUES (?, ?, ?)",
-
-  UPDATE_DEPARTMENT: "UPDATE departments SET company_id = ?, name = ?, status = ? WHERE id = ?",
+  getAllDepartments,
+  getDepartmentById,
+  createDepartment,
+  updateDepartment,
+  deleteDepartment
 };

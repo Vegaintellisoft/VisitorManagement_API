@@ -1,21 +1,10 @@
-// module.exports = {
-//   GET_ALL_COMPANIES: "SELECT * FROM companies",
-
-//   GET_COMPANY_BY_ID: "SELECT * FROM companies WHERE id = ?",
-
-//   CREATE_COMPANY: "INSERT INTO companies (name, status) VALUES (?, ?)",
-
-//   UPDATE_COMPANY: "UPDATE companies SET name = ?, status = ? WHERE id = ?",
-// };
-
-// queries/company_query.js
 
 const getAllCompanies = `
-  SELECT * FROM companies;
+  SELECT * FROM companies WHERE status = 'active';
 `;
 
 const getCompanyById = `
-  SELECT * FROM companies WHERE id = ?;
+ SELECT * FROM companies WHERE id = ? AND status = 'active';
 `;
 
 const createCompany = `
