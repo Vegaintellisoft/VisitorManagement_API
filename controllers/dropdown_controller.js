@@ -1,8 +1,7 @@
-// controllers/dropdownController.js
 const db = require('../db');
 const queries = require('../queries/dropdownQueries');
 
-// Controller to get all active companies
+// Get all active companies
 exports.getCompanies = (req, res) => {
   db.query(queries.getActiveCompanies, (err, results) => {
     if (err) {
@@ -13,10 +12,9 @@ exports.getCompanies = (req, res) => {
   });
 };
 
-// Controller to get departments based on company ID
+// Get active departments for active company
 exports.getDepartmentsByCompany = (req, res) => {
-  const { companyId } = req.body;  // Accessing companyId from request body
-
+  const { companyId } = req.body;
   db.query(queries.getDepartmentsByCompany, [companyId], (err, results) => {
     if (err) {
       console.error('Error fetching departments:', err);
@@ -26,10 +24,9 @@ exports.getDepartmentsByCompany = (req, res) => {
   });
 };
 
-// Controller to get designations based on department ID
+// Get active designations where company and department active
 exports.getDesignationsByDepartment = (req, res) => {
-  const { departmentId } = req.body;  // Accessing departmentId from request body
-
+  const { departmentId } = req.body;
   db.query(queries.getDesignationsByDepartment, [departmentId], (err, results) => {
     if (err) {
       console.error('Error fetching designations:', err);
@@ -39,10 +36,9 @@ exports.getDesignationsByDepartment = (req, res) => {
   });
 };
 
-// Controller to get employees based on designation ID
+// Get active employees where company and designation active
 exports.getEmployeesByDesignation = (req, res) => {
-  const { designationId } = req.body;  // Accessing designationId from request body
-
+  const { designationId } = req.body;
   db.query(queries.getEmployeesByDesignation, [designationId], (err, results) => {
     if (err) {
       console.error('Error fetching employees:', err);

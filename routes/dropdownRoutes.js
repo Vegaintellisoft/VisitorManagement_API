@@ -1,4 +1,3 @@
-// routes/dropdownRoutes.js
 const express = require('express');
 const router = express.Router();
 const dropdownController = require('../controllers/dropdown_controller');
@@ -26,9 +25,9 @@ const dropdownController = require('../controllers/dropdown_controller');
  *               items:
  *                 type: object
  *                 properties:
- *                   id:
+ *                   company_id:
  *                     type: integer
- *                   name:
+ *                   company_name:
  *                     type: string
  */
 router.get('/companies', dropdownController.getCompanies);
@@ -45,11 +44,11 @@ router.get('/companies', dropdownController.getCompanies);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - companyId
  *             properties:
  *               companyId:
  *                 type: integer
- *                 description: The ID of the company
- *                 example: 1
  *     responses:
  *       200:
  *         description: List of active departments for the company
@@ -60,10 +59,12 @@ router.get('/companies', dropdownController.getCompanies);
  *               items:
  *                 type: object
  *                 properties:
- *                   id:
+ *                   department_id:
  *                     type: integer
- *                   name:
+ *                   dept_name:
  *                     type: string
+ *       500:
+ *         description: Database error
  */
 router.post('/departments', dropdownController.getDepartmentsByCompany);
 
@@ -94,16 +95,16 @@ router.post('/departments', dropdownController.getDepartmentsByCompany);
  *               items:
  *                 type: object
  *                 properties:
- *                   id:
+ *                   designation_id:
  *                     type: integer
- *                   name:
+ *                   desgnation_name:
  *                     type: string
  */
 router.post('/designations', dropdownController.getDesignationsByDepartment);
 
 /**
  * @swagger
- * /api/employees:
+ * /api/get_employees:
  *   post:
  *     summary: Retrieve active employees for a specific designation
  *     tags: [DropDowns]
@@ -113,6 +114,8 @@ router.post('/designations', dropdownController.getDesignationsByDepartment);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - designationId
  *             properties:
  *               designationId:
  *                 type: integer
@@ -128,11 +131,13 @@ router.post('/designations', dropdownController.getDesignationsByDepartment);
  *               items:
  *                 type: object
  *                 properties:
- *                   id:
+ *                   emp_id:
  *                     type: integer
- *                   name:
+ *                   emp_name:
  *                     type: string
+ *       500:
+ *         description: Server error
  */
-router.post('/employees', dropdownController.getEmployeesByDesignation);
+router.post('/get_employees', dropdownController.getEmployeesByDesignation);
 
 module.exports = router;
