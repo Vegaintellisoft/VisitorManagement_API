@@ -50,7 +50,7 @@ const verifyOtp = (req, res) => {
   });
 };
 
-// Submit visitor details and generate QR code\
+// Submit visitor details and generate QR code
 const submitDetails = async (req, res) => {
   const data = req.body;
   const imagePath = req.file ? req.file.path : null;
@@ -176,7 +176,28 @@ const getVisitorDetails = (req, res) => {
   });
 };
 
+const updateVisitorStatusController = (req, res) => {
+  const visitorId = req.params.id;
+  const { status } = req.body;
+
+  const query = queries.updateVisitorStatusQuery;  // get the query string
+
+  conn.query(query, [status, visitorId], (err, result) => {
+    if (err) {
+      console.error('DB Error in updateVisitorStatus:', err);
+      return res.status(500).json({ message: 'Database error', error: err });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Visitor not found or status not updated' });
+    }
+
+    res.json({ message: 'Status updated successfully' });
+  });
+};
+
 module.exports = {
+  updateVisitorStatusController,
   getVisitorDetails,
   getAllVisitors,
   sendOtp,

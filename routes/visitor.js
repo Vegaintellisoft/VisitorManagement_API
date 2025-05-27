@@ -2,30 +2,39 @@ const express = require('express');
 const router = express.Router();
 const visitorController = require('../controllers/visitor_controller');
 const multer = require('multer');
+const qrcode = require('qrcode');
 
-// Function to generate the QR code and save it in the database
+// QR code generation helper (returns a Promise)
 const generateQrCode = (visitorId) => {
   return new Promise((resolve, reject) => {
     const qrData = `visitor-${visitorId}`;
     qrcode.toDataURL(qrData, (err, qrCodeUrl) => {
       if (err) reject(err);
-      resolve(qrCodeUrl);
+      else resolve(qrCodeUrl);
     });
   });
 };
 
-// File upload setup
+// File upload setup with multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
 });
 const upload = multer({ storage });
+/**
+ * @swagger
+ * tags:
+ *   - name: Visitors
+ *     description: Visitor management APIs
+ */
 
 /**
  * @swagger
  * /visitor/send-otp:
  *   post:
  *     summary: Send OTP to a mobile number
+ *     tags:
+ *       - Visitors
  *     requestBody:
  *       required: true
  *       content:
@@ -47,6 +56,8 @@ router.post('/send-otp', visitorController.sendOtp);
  * /visitor/verify-otp:
  *   post:
  *     summary: Verify OTP for a mobile number
+ *     tags:
+ *       - Visitors
  *     requestBody:
  *       required: true
  *       content:
@@ -66,62 +77,13 @@ router.post('/send-otp', visitorController.sendOtp);
  */
 router.post('/verify-otp', visitorController.verifyOtp);
 
-// /**
-//  * @swagger
-//  * /visitor/submit-details:
-//  *   post:
-//  *     summary: Submit visitor details after OTP verification
-//  *     consumes:
-//  *       - multipart/form-data
-//  *     requestBody:
-//  *       required: true
-//  *       content:
-//  *         multipart/form-data:
-//  *           schema:
-//  *             type: object
-//  *             properties:
-//  *               phone:
-//  *                 type: string
-//  *               first_name:
-//  *                 type: string
-//  *               last_name:
-//  *                 type: string
-//  *               email:
-//  *                 type: string
-//  *               gender:
-//  *                 type: string
-//  *               company_id:
-//  *                 type: integer
-//  *               department_id:
-//  *                 type: integer
-//  *               designation_id:
-//  *                 type: integer
-//  *               whom_to_meet:
-//  *                 type: integer
-//  *               purpose:
-//  *                 type: string
-//  *               aadhar_no:
-//  *                 type: string
-//  *               address:
-//  *                 type: string
-//  *               image:
-//  *                 type: string
-//  *                 format: binary
-//  *     responses:
-//  *       200:
-//  *         description: Visitor data submitted
-//  *       403:
-//  *         description: Phone not verified
-//  */
-// router.post('/submit-details', upload.single('image'), visitorController.submitDetails);
-
-
-
 /**
  * @swagger
  * /visitor/all-visitors:
  *   get:
  *     summary: Retrieve all visitors
+ *     tags:
+ *       - Visitors
  *     description: Fetches a list of all visitors from the database.
  *     responses:
  *       200:
@@ -141,30 +103,35 @@ router.post('/verify-otp', visitorController.verifyOtp);
  *                     properties:
  *                       id:
  *                         type: integer
- *                         description: The visitor's ID
  *                       first_name:
  *                         type: string
- *                         description: The visitor's first name
  *                       last_name:
  *                         type: string
- *                         description: The visitor's last name
  *                       email:
  *                         type: string
- *                         description: The visitor's email address
  *                       phone:
  *                         type: string
- *                         description: The visitor's phone number
  *                       purpose:
  *                         type: string
- *                         description: The visitor's purpose of visit
  *                       aadhar_no:
  *                         type: string
- *                         description: The visitor's Aadhar number
  *                       address:
  *                         type: string
- *                         description: The visitor's address
  *       500:
  *         description: Internal server error
+ */
+router.get('/all-visitors', visitorController.getAllVisitors);
+
+/**
+ * @swagger
+ * /visitor-details:
+ *   get:
+ *     summary: Retrieve visitor details including check-in/out, status, and QR code
+ *     tags:
+ *       - Visitors
+ *     responses:
+ *       200:
+ *         description: Visitor details retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -172,49 +139,31 @@ router.post('/verify-otp', visitorController.verifyOtp);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Error fetching data
- *                 error:
- *                   type: string
- *                   example: Database error message
- */
-router.get('/all-visitors', visitorController.getAllVisitors);
-
-/**
- * @swagger
- * /api/visitor-details:
- *   get:
- *     summary: Retrieve a list of visitor details including visitor name, employee name, check-in time, check-out time, status, and QR code
- *     tags: [Visitors]
- *     responses:
- *       200:
- *         description: List of visitor details
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   visitor_id:
- *                     type: integer
- *                   visitor_name:
- *                     type: string
- *                   employee_name:
- *                     type: string
- *                   checkin:
- *                     type: string
- *                     format: date-time
- *                   checkout:
- *                     type: string
- *                     format: date-time
- *                   status:
- *                     type: integer
- *                   qr_code:
- *                     type: string
- *       500:
- *         description: Internal Server Error
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       visitor_id:
+ *                         type: integer
+ *                       visitor_name:
+ *                         type: string
+ *                       employee_name:
+ *                         type: string
+ *                       checkin:
+ *                         type: string
+ *                         format: date-time
+ *                       checkout:
+ *                         type: string
+ *                         format: date-time
+ *                       status:
+ *                         type: integer
+ *                       qr_code:
+ *                         type: string
  *       404:
  *         description: No visitors found
+ *       500:
+ *         description: Internal Server Error
  */
 router.get('/visitor-details', visitorController.getVisitorDetails);
 
@@ -223,6 +172,8 @@ router.get('/visitor-details', visitorController.getVisitorDetails);
  * /visitor/submit-details:
  *   post:
  *     summary: Submit visitor details and generate QR code
+ *     tags:
+ *       - Visitors
  *     consumes:
  *       - multipart/form-data
  *     requestBody:
@@ -270,6 +221,8 @@ router.post('/submit-details', upload.single('image'), visitorController.submitD
  * /visitor/qr-scan:
  *   post:
  *     summary: Handle visitor QR code scan (Check-in/Check-out)
+ *     tags:
+ *       - Visitors
  *     requestBody:
  *       required: true
  *       content:
@@ -281,10 +234,53 @@ router.post('/submit-details', upload.single('image'), visitorController.submitD
  *                 type: string
  *     responses:
  *       200:
- *         description: Visitor check-in/check-out status
+ *         description: Visitor check-in/check-out status updated
  *       404:
  *         description: Visitor not found
  */
 router.post('/qr-scan', visitorController.handleQrScan);
+
+/**
+ * @swagger
+ * /visitor/{id}/status:
+ *   put:
+ *     summary: Update visitor status by ID
+ *     tags:
+ *       - Visitors
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Visitor ID
+ *     requestBody:
+ *       description: New status value
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: integer
+ *                 example: 1
+ *     responses:
+ *       200:
+ *         description: Status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Status updated successfully
+ *       404:
+ *         description: Visitor not found or status not updated
+ *       500:
+ *         description: Database error
+ */
+router.put('/:id/status', visitorController.updateVisitorStatusController);
 
 module.exports = router;

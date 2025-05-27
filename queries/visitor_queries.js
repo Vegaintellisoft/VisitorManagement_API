@@ -48,20 +48,9 @@ const getVisitorDetailsQuery = `
     LEFT JOIN employees e ON v.whom_to_meet = e.id
     ORDER BY v.sign_in_time DESC;
 `;
-
-// Query to select temp visitor by phone number
-// const selectTempVisitorByPhone = 'SELECT * FROM temp_visitors WHERE phone = ?';
-
-// // Query to update temp visitor details
-// const updateTempVisitor = 'UPDATE temp_visitors SET first_name = ?, last_name = ?, email = ?, gender = ?, company_id = ?, department_id = ?, designation_id = ?, whom_to_meet = ?, purpose = ?, aadhar_no = ?, address = ?, image_path = ?, phone = ? WHERE phone = ?';
-
-// // Query to insert into main visitor table
-// const insertIntoVisitorMain = 'INSERT INTO visitors (first_name, last_name, email, phone, gender, company_id, department_id, designation_id, whom_to_meet, purpose, aadhar_no, address, image_path, otp, otp_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-
-// // Query to get visitor details for check-in and check-out
-// const getVisitorDetailsQuery = 'SELECT * FROM visitors WHERE id = ?';
-  
+const updateVisitorStatusQuery = 'UPDATE visitors SET status = ? WHERE id = ?';
 module.exports = {
+  updateVisitorStatusQuery,
   getAllVisitorsQuery,
   sendOtpQuery,
   selectOtpQuery,

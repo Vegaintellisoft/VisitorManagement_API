@@ -4,19 +4,19 @@ const getAllCompanies = `
 `;
 
 const getCompanyById = `
- SELECT * FROM companies WHERE id = ? AND status = 'active';
+ SELECT * FROM companies WHERE company_id = ? AND status = 'active';
 `;
 
 const createCompany = `
-  INSERT INTO companies (name, status) VALUES (?, ?);
+  INSERT INTO companies (company_name, status) VALUES (?, ?);
 `;
 
 const updateCompany = `
-  UPDATE companies SET name = ?, status = ? WHERE id = ?;
+  UPDATE companies SET company_name = ?, status = ? WHERE company_id = ?;
 `;
 
 const deleteCompany = `
-  DELETE FROM companies WHERE id = ?;
+  DELETE FROM companies WHERE company_id = ?;
 `;
 
 module.exports = {
