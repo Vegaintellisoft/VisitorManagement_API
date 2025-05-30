@@ -1,4 +1,5 @@
-listModules = "SELECT module_id, module_name FROM modules;"
+listModules = "SELECT module_id, module_name, module_description FROM modules;"
+getModulePermissions = "SELECT id AS permission_id, permission_name, permission_description FROM permissions WHERE designated_module_id=?;"
 addRole = "INSERT INTO roles (role_name) VALUES (?);"
 getRoleId = "SELECT role_id FROM roles WHERE role_name = ?;"
 getRoleName = "SELECT role_name FROM roles WHERE role_id = ?"
@@ -18,6 +19,7 @@ getRolesByModules = `SELECT m.module_name, GROUP_CONCAT(DISTINCT r.role_name SEP
                     `
 module.exports = {
                     listModules, 
+                    getModulePermissions,
                     addRole, 
                     getRoleId, 
                     addRolePermissions, 

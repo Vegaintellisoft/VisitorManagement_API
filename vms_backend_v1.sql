@@ -27,13 +27,13 @@ CREATE TABLE designations (
 );
 
 CREATE TABLE modules (
-	module_id int PRIMARY KEY AUTO_INCREMENT,
+	  module_id int PRIMARY KEY AUTO_INCREMENT,
     module_name VARCHAR(150) UNIQUE NOT NULL,
     module_description MEDIUMTEXT
 );
 
 CREATE TABLE permissions(
-	permission_id int PRIMARY KEY AUTO_INCREMENT,
+	  permission_id int PRIMARY KEY AUTO_INCREMENT,
     permission_name VARCHAR(100) UNIQUE NOT NULL,
     designated_module_id int NOT NULL,
     permission_description MEDIUMTEXT,
@@ -44,10 +44,10 @@ CREATE TABLE permissions(
 );
 
 CREATE TABLE roles(
-	role_id int PRIMARY KEY AUTO_INCREMENT,
+	  role_id int PRIMARY KEY AUTO_INCREMENT,
     role_name VARCHAR(100) UNIQUE NOT NULL,
     created_at TIMESTAMP NOT NULL default current_timestamp,
-	status ENUM('Active', 'Inactive') DEFAULT 'Active',
+	  status ENUM('Active', 'Inactive') DEFAULT 'Active',
     visibility bool NOT NULL default true
 );
 
