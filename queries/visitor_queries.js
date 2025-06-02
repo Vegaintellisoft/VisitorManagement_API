@@ -63,6 +63,7 @@ const getVisitorQrCodeById = `SELECT
   v.last_name AS visitor_last_name, 
   v.email, 
   v.phone, 
+  v.image,
   v.whom_to_meet,
   e.emp_id,
   e.first_name AS employee_first_name, 

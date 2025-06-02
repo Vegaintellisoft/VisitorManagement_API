@@ -96,8 +96,8 @@ const submitDetails = async (req, res) => {
           if (err) return res.status(500).send(err);
           res.send({ 
             message: 'Visitor data submitted and QR code generated', 
-            visitor_id: visitorId,        // <- Added visitor ID here
-            qr_code: qrCode               // <- Existing QR code
+            visitor_id: visitorId,       
+            qr_code: qrCode               
           });
         });
       });
@@ -219,12 +219,14 @@ const getVisitorQrCode = (req, res) => {
     }
 
     const row = results[0];
-
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const imageUrl = row.image ? `${baseUrl}/uploads/${row.image}` : null;
     res.json({
       qr_code: row.qr_code,
       first_name: row.visitor_first_name,
       last_name: row.visitor_last_name,
       email: row.email,
+      image: imageUrl ,
       phone: row.phone,
       whom_to_meet: {
         employee_id: row.emp_id,
