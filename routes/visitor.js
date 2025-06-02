@@ -285,7 +285,7 @@ router.put('/:id/status', visitorController.updateVisitorStatusController);
 
 /**
  * @swagger
- * /visitor/qrcode:
+ * /visitor/gen_card:
  *   post:
  *     summary: Get QR code for a visitor by ID (only if qr_status is 'active')
  *     tags:
@@ -347,6 +347,7 @@ router.put('/:id/status', visitorController.updateVisitorStatusController);
  *       500:
  *         description: Internal server error
  */
-router.post('/qrcode', visitorController.getVisitorQrCode);
+router.post('/gen_card', visitorController.getVisitorQrCode);
+
 
 module.exports = router;
