@@ -213,6 +213,20 @@ router.get('/visitor-details', visitorController.getVisitorDetails);
  *     responses:
  *       200:
  *         description: Visitor data submitted and QR code generated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Visitor data submitted and QR code generated
+ *                 visitor_id:
+ *                   type: integer
+ *                   example: 123
+ *                 qr_code:
+ *                   type: string
+ *                   example: https://yourdomain.com/qrcodes/visitor123.png
  */
 router.post('/submit-details', upload.single('image'), visitorController.submitDetails);
 

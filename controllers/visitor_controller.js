@@ -92,14 +92,19 @@ const submitDetails = async (req, res) => {
         const qrCode = await generateQrCode(visitorId);
 
         // Update the visitor record with the generated QR code
-        conn.query('UPDATE visitors SET qr_code = ? WHERE id = ?', [qrCode, visitorId], (err) => {
+       conn.query('UPDATE visitors SET qr_code = ? WHERE visitor_id = ?', [qrCode, visitorId], (err) => {
           if (err) return res.status(500).send(err);
-          res.send({ message: 'Visitor data submitted and QR code generated', qr_code: qrCode });
+          res.send({ 
+            message: 'Visitor data submitted and QR code generated', 
+            visitor_id: visitorId,        // <- Added visitor ID here
+            qr_code: qrCode               // <- Existing QR code
+          });
         });
       });
     });
   });
 };
+
 
 // Handle QR scan (Check-in and Check-out)
 const handleQrScan = (req, res) => {
