@@ -11,6 +11,15 @@ async function getModules(){
     }
 }
 
+async function getModulePermissions(module) {
+    try{
+        [res] = await pool.query(queries.getModulePermissions,[module]);
+        return res
+    }catch(error){
+        throw ({status:500, message: 'Database Operation failed'})
+    }
+}
+
 async function createRole(roleName, permissionIds){
     try{
         resp = await pool.query(queries.addRole,[roleName]);
@@ -108,6 +117,7 @@ async function getRolesByModules(){
 
 module.exports = {
                     getModules,
+                    getModulePermissions,
                     createRole,
                     getRoles,
                     getRoleNameById, 

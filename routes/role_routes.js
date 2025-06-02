@@ -77,6 +77,85 @@ router.get('/list_modules',authenticateToken, async (req,res)=>{
 
 /**
  * @swagger
+ * /module_permissions/{module}:
+ *   get:
+ *     summary: Get permissions for a module
+ *     description: Retrieves all permissions (with ID, name, and description) assigned to a specific module.
+ *     tags:
+ *       - Permissions
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: module
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The module identifier (usually module ID or name)
+ *         example: "user-management"
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved module permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   permission_id:
+ *                     type: integer
+ *                     example: 12
+ *                   permission_name:
+ *                     type: string
+ *                     example: "Create User"
+ *                   permission_description:
+ *                     type: string
+ *                     example: "Allows creation of new users"
+ *       400:
+ *         description: Invalid module parameter
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid module name
+ *       401:
+ *         description: Unauthorized - Missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal server/database error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Database Operation failed
+ */
+
+router.get('/module_permissions/:module',authenticateToken, async (req,res)=>{
+    mod = req.params.module
+    try{
+        actions = await role_controller.getModulePermissions(mod)
+        res.json(actions)
+    }catch(err){
+        res.status(err.status||500).json({error: err.message})
+    }
+})
+
+/**
+ * @swagger
  * /add:
  *   post:
  *    summary: Create Role
@@ -155,9 +234,14 @@ router.post('/add',authenticateToken, async (req,res)=>{
  *                   role_name:
  *                     type: string
  *                     example: Admin
+ *                   created_at:
+ *                      type: date
  *                   visibility:
  *                     type: boolean
  *                     example: true
+ *                   status:
+ *                     type: string
+ *                     example: 'Active'/'Inactive'
  *       401:
  *         description: Unauthorized - Token missing or invalid
  *         content:
