@@ -158,7 +158,7 @@ const getAllVisitors = (req, res) => {
   });
 };
 
-// Controller to fetch visitor details (visitor ID, name, employee name, check-in, check-out, status, and QR code)
+
 const getVisitorDetails = (req, res) => {
   const query = queries.getVisitorDetailsQuery;
 
@@ -196,7 +196,45 @@ const updateVisitorStatusController = (req, res) => {
   });
 };
 
+const getVisitorQrCode = (req, res) => {
+  const visitor_id = parseInt(req.body.visitor_id, 10);
+
+  if (isNaN(visitor_id)) {
+    return res.status(400).json({ error: 'Invalid visitor ID' });
+  }
+
+  conn.query(queries.getVisitorQrCodeById, [visitor_id], (err, results) => {
+    if (err) {
+      console.error('DB error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Visitor not found or QR code not active' });
+    }
+
+    const row = results[0];
+
+    res.json({
+      qr_code: row.qr_code,
+      first_name: row.visitor_first_name,
+      last_name: row.visitor_last_name,
+      email: row.email,
+      phone: row.phone,
+      whom_to_meet: {
+        employee_id: row.emp_id,
+        first_name: row.employee_first_name,
+        last_name: row.employee_last_name
+      }
+    });
+  });
+};
+
+
+
+
 module.exports = {
+   getVisitorQrCode,
   updateVisitorStatusController,
   getVisitorDetails,
   getAllVisitors,

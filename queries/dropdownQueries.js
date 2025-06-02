@@ -25,7 +25,7 @@ const getDesignationsByDepartment = `
 
 // Get active employees by designation where company is active
 const getEmployeesByDesignation = `
-  SELECT e.emp_id as id, CONCAT(e.first_name, ' ', e.last_name) as emp_name
+  SELECT e.emp_id as emp_id, CONCAT(e.first_name, ' ', e.last_name) as emp_name
   FROM employees e
   JOIN designations des ON e.designation_id = des.designation_id
   JOIN companies c ON e.company_id = c.company_id

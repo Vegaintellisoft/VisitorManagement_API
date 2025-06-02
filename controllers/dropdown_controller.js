@@ -38,8 +38,8 @@ exports.getDesignationsByDepartment = (req, res) => {
 
 // Get active employees where company and designation active
 exports.getEmployeesByDesignation = (req, res) => {
-  const { designationId } = req.body;
-  db.query(queries.getEmployeesByDesignation, [designationId], (err, results) => {
+  const { designation_id } = req.body;
+  db.query(queries.getEmployeesByDesignation, [designation_id], (err, results) => {
     if (err) {
       console.error('Error fetching employees:', err);
       return res.status(500).json({ error: 'Database error' });

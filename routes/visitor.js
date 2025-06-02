@@ -283,4 +283,70 @@ router.post('/qr-scan', visitorController.handleQrScan);
  */
 router.put('/:id/status', visitorController.updateVisitorStatusController);
 
+/**
+ * @swagger
+ * /visitor/qrcode:
+ *   post:
+ *     summary: Get QR code for a visitor by ID (only if qr_status is 'active')
+ *     tags:
+ *       - Visitors
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - visitor_id
+ *             properties:
+ *               visitor_id:
+ *                 type: integer
+ *                 example: 123
+ *                 description: ID of the visitor
+ *     responses:
+ *       200:
+ *         description: QR code and visitor data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 qr_code:
+ *                   type: string
+ *                   description: QR code data (base64 encoded or raw string)
+ *                 first_name:
+ *                   type: string
+ *                   description: Visitor's first name
+ *                 last_name:
+ *                   type: string
+ *                   description: Visitor's last name
+ *                 email:
+ *                   type: string
+ *                   format: email
+ *                   description: Visitor's email address
+ *                 phone:
+ *                   type: string
+ *                   description: Visitor's phone number
+ *                 whom_to_meet:
+ *                   type: object
+ *                   description: Employee whom the visitor is meeting
+ *                   properties:
+ *                     employee_id:
+ *                       type: integer
+ *                       description: Employee ID
+ *                     first_name:
+ *                       type: string
+ *                       description: Employee's first name
+ *                     last_name:
+ *                       type: string
+ *                       description: Employee's last name
+ *       400:
+ *         description: Invalid visitor ID
+ *       404:
+ *         description: Visitor not found or QR code not active
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/qrcode', visitorController.getVisitorQrCode);
+
 module.exports = router;
