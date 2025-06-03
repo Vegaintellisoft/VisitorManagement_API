@@ -223,8 +223,10 @@ const getVisitorQrCode = (req, res) => {
     const imageUrl = row.image ? `${baseUrl}/uploads/${row.image}` : null;
     res.json({
       qr_code: row.qr_code,
+      visitor_ID:row.visitor_id,
       first_name: row.visitor_first_name,
       last_name: row.visitor_last_name,
+      purpose:row.purpose,
       email: row.email,
       image: imageUrl ,
       phone: row.phone,

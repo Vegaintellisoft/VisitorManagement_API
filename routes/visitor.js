@@ -334,6 +334,9 @@ router.put('/:id/status', visitorController.updateVisitorStatusController);
  *                 last_name:
  *                   type: string
  *                   description: Visitor's last name
+ *                 purpose:
+ *                   type: string
+ *                   description: Purpose of visit
  *                 email:
  *                   type: string
  *                   format: email
@@ -341,6 +344,10 @@ router.put('/:id/status', visitorController.updateVisitorStatusController);
  *                 phone:
  *                   type: string
  *                   description: Visitor's phone number
+ *                 image:
+ *                   type: string
+ *                   format: uri
+ *                   description: Visitor's profile image URL
  *                 whom_to_meet:
  *                   type: object
  *                   description: Employee whom the visitor is meeting
