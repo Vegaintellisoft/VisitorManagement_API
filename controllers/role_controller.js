@@ -7,6 +7,7 @@ async function getModules(){
         [res] = await pool.query(queries.listModules);
         return res
     }catch(error){
+        console.log(error)
         throw ({status:500, message: 'Database Operation failed'})
     }
 }

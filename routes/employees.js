@@ -171,6 +171,7 @@ router.get('/:id', (req, res) => {
  *               - company_id
  *               - department_id
  *               - designation_id
+ *               - role_id
  *               - status
  *             properties:
  *               first_name:
@@ -192,6 +193,8 @@ router.get('/:id', (req, res) => {
  *               department_id:
  *                 type: integer
  *               designation_id:
+ *                 type: integer
+ *               role_id:
  *                 type: integer
  *               status:
  *                 type: string
@@ -233,6 +236,7 @@ router.post('/', upload.single('image'), async (req, res) => {
       company_id,
       department_id,
       designation_id,
+      role_id,
       status,
       password,
       confirm_password,
@@ -247,8 +251,8 @@ router.post('/', upload.single('image'), async (req, res) => {
     const image = req.file ? req.file.path.replace(/\\/g, "/") : null;
 
     const sql = `INSERT INTO employees 
-      (first_name, last_name, email, phone, joining_date, gender, company_id, department_id, designation_id, status, password, remarks, image) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      (first_name, last_name, email, phone, joining_date, gender, company_id, department_id, designation_id, role_id, status, password, remarks, image) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
       first_name,
       last_name,
@@ -259,6 +263,7 @@ router.post('/', upload.single('image'), async (req, res) => {
       company_id,
       department_id,
       designation_id,
+      role_id,
       status,
       hashedPassword,
       remarks,

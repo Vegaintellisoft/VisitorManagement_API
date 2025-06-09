@@ -13,7 +13,6 @@ async function loginUser(emailID, password) {
   try {
     const [users] = await pool.query(queries.verifyUser, [emailID]);
     if (users.length === 0) {
-      console.log("user not found");
       throw { status: 401, message: "User not found" };
     }
     const user = users[0];
@@ -22,39 +21,38 @@ async function loginUser(emailID, password) {
       throw { status: 401, message: "Incorrect Password!" };
     }
     const accessToken = jwt.sign(
-      {
-        userId: user.id,
-        roleId: user.role_id,
-        emailId: emailID,
-        currDate: getDateTimeString(),
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1d" }
-    );
+                                  {
+                                    userId: user.id,
+                                    roleId: user.role_id,
+                                    emailId: emailID,
+                                    currDate: getDateTimeString(),
+                                  },
+                                  process.env.ACCESS_TOKEN_SECRET,
+                                  { expiresIn: "1d" }
+                                );
     const refreshToken = jwt.sign(
-      {
-        userId: user.id,
-        roleId: user.role_id,
-        emailId: emailID,
-        currDate: getDateTimeString(),
-      },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "7d" }
-    );
+                                  {
+                                    userId: user.id,
+                                    roleId: user.role_id,
+                                    emailId: emailID,
+                                    currDate: getDateTimeString(),
+                                  },
+                                  process.env.REFRESH_TOKEN_SECRET,
+                                  { expiresIn: "7d" }
+                                );
 
     const [resp] = await pool.execute(queries.updateRefreshToken, [
       user.id,
       refreshToken,
     ]);
     return {
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      access_token: accessToken,
+      refresh_token: refreshToken,
       user_name: user.first_name,
-      roleId: user.role_id,
+      role_id: user.role_id,
     };
   } catch (error) {
-    console.log(error.message);
-    throw { status: 500, message: "Login Failed" };
+    throw { status: error.status, message: error.message };
   }
 }
 

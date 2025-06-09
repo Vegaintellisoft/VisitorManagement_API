@@ -5,7 +5,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /refresh:
+ * /api/auth/refresh:
  *   post:
  *     summary: Refresh the user's access token
  *     description: Uses a refresh token stored in cookies to generate a new access token
@@ -55,7 +55,7 @@ router.post("/refresh", async (req, res) => {
 
 /**
  * @swagger
- * /login:
+ * /api/auth/login:
  *   post:
  *     summary: Authenticate user and return access & refresh tokens
  *     description: Verifies user credentials. On success, returns an access token and sets a refresh token in an HTTP-only cookie.
@@ -136,7 +136,8 @@ router.post("/login", async (req, res) => {
   const { emailId, password } = req.body;
   try {
     const data = await auth_methods.loginUser(emailId, password);
-    res.cookie("refreshToken", data.refreshToken, {
+
+    res.cookie("refreshToken", data.refresh_token, {
       httpOnly: true,
       secure: true,
       sameSite: "Strict",
@@ -146,9 +147,9 @@ router.post("/login", async (req, res) => {
       message: "Login Successful!",
       result: true,
       data: {
-        access_token: data.accessToken,
-        roleId: data.roleId,
-        user_name: data.userName,
+        accessToken: data.access_token,
+        roleId: data.role_id,
+        userName: data.user_name,
       },
     });
   } catch (error) {
@@ -159,7 +160,7 @@ router.post("/login", async (req, res) => {
 
 /**
  * @swagger
- * /logout:
+ * /api/auth/logout:
  *    post:
  *      summary: Logout user and clear cookie and delete refreshToken
  *      description: The refresh token is deleted from the database and the httponly cookie carrying the refreshToken is cleared
