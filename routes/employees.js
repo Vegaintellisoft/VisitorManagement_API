@@ -117,6 +117,31 @@ router.get('/', (req, res) => {
   });
 });
 
+
+router.post('/change_status', (req,res)=>{
+  const {employee_id, status} = req.body
+  const query = `
+    UPDATE employees SET status=? WHERE id = ?;
+  `
+  db.query(query, [employee_id,status], (err,results)=>{
+    if (err) return res.status(500).json(err);
+    res.json(result[0]);
+  })
+})
+
+router.get('/list_employees',(req,res)=>{
+  const query = `
+    SELECT e.id AS employee_id, 
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name, 
+    c.company_name, e.phone, e.status 
+    FROM employees e
+    JOIN companies c ON e.company_id = c.id`
+  db.query(query, (err,results)=>{
+    if (err) return res.status(500).json(err);
+    res.json(results);
+  })
+})
+
 /**
  * @swagger
  * /api/employees/{id}:

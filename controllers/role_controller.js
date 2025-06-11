@@ -23,13 +23,13 @@ async function getModulePermissions(module) {
 
 async function createRole(roleName, permissionIds){
     try{
-        resp = await pool.query(queries.addRole,[roleName]);
-        [role_id] = await pool.query(queries.getRoleId,[roleName]);
-        permission_values = permissionIds.map(pid => [role_id[0].id, pid])
+        addRoleResp = await pool.query(queries.addRole,[roleName]);
+        roleId = addRoleResp[0]['insertId']
+        permission_values = permissionIds.map(pid => [roleId, pid])
         resp = await pool.query(queries.addRolePermissions,[permission_values])
         return resp
     }catch(error){
-        throw ({status:500,message: "Database Operation failed"})
+        throw ({status:500,message: error.message})
     }
 }
 
