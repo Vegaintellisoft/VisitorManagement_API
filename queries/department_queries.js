@@ -4,6 +4,13 @@ const getAllDepartments = `
   JOIN companies c ON d.company_id = c.id;
 `;
 
+const getDepartmentByCompany = `
+  SELECT d.*
+  FROM departments d 
+  JOIN companies c ON d.company_id = c.id
+  WHERE c.id = ?;
+`
+
 const getDepartmentById = `
   SELECT * FROM departments WHERE department_id = ?;
 `;
@@ -22,6 +29,7 @@ const deleteDepartment = `
 
 module.exports = {
   getAllDepartments,
+  getDepartmentByCompany,
   getDepartmentById,
   createDepartment,
   updateDepartment,

@@ -10,6 +10,15 @@ exports.getAll = async () => {
   }
 };
 
+exports.getDepartmetsByCompany = async (cid) => {
+  try {
+    const [rows] = await db.promise().query(queries.getDepartmentByCompany,[cid]);
+    return rows;
+  } catch (error) {
+    throw { status: 500, message: "Failed to fetch departments" };
+  }
+};
+
 exports.getById = async (id) => {
   try {
     const [rows] = await db.promise().query(queries.getDepartmentById, [id]);

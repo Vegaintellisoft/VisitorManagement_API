@@ -90,6 +90,16 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.get('/company/:company_id', async(req,res)=>{
+  const {company_id} = req.params
+  try{
+    const departments = await departmentController.getDepartmetsByCompany(company_id);
+    res.status(200).json(departments);
+  } catch(error){
+    res.status(error.status || 500).json({ error: error.message });
+  }
+});
+
 /**
  * @swagger
  * /api/departments:
