@@ -135,9 +135,11 @@ router.get('/list_employees',(req,res)=>{
     CONCAT(e.first_name, ' ', e.last_name) AS employee_name, 
     c.company_name, e.phone, e.status 
     FROM employees e
-    JOIN companies c ON e.company_id = c.id`
+    JOIN companies c ON e.company_id = c.id
+    WHERE e.visibility=True`
   db.query(query, (err,results)=>{
     if (err) return res.status(500).json(err);
+    console.log(results)
     res.json(results);
   })
 })
@@ -449,7 +451,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
  *         description: Server error
  */
 router.delete('/:id', (req, res) => {
-  const sql = 'DELETE FROM employees WHERE id = ?';
+  const sql = 'UPDATE employees SET visibility=False WHERE id = ?';
   db.query(sql, [req.params.id], (err, result) => {
     if (err) return res.status(500).json(err);
     res.json({ message: 'Employee deleted successfully' });

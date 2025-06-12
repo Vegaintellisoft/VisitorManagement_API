@@ -83,6 +83,7 @@ CREATE TABLE employees (
   image VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  visibility bool DEFAULT True,
   FOREIGN KEY (company_id) REFERENCES companies(id),
   FOREIGN KEY (department_id) REFERENCES departments(id),
   FOREIGN KEY (designation_id) REFERENCES designations(id),
