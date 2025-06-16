@@ -16,7 +16,7 @@ const upload = require('../utils/upload'); // multer middleware
 
 /**
  * @swagger
- * /employees/add-employee:
+ * /api/employees/add-employee:
  *   post:
  *     summary: Add a new employee
  *     tags: [Employees]
@@ -62,7 +62,7 @@ router.post('/add-employee', upload.single('image'), employeeController.addEmplo
 
 /**
  * @swagger
- * /employees/update-employee/{id}:
+ * /api/employees/update-employee/{id}:
  *   put:
  *     summary: Update an employee by ID
  *     tags: [Employees]
@@ -110,7 +110,7 @@ router.put('/update-employee/:id', upload.single('image'), employeeController.up
 
 /**
  * @swagger
- * /employees/get_all_employee:
+ * /api/employees/get_all_employee:
  *   get:
  *     summary: Get all employees
  *     tags: [Employees]
@@ -124,7 +124,7 @@ router.get('/get_all_employee', employeeController.getAllEmployees);
 
 /**
  * @swagger
- * /employees/get_emp_id/{id}:
+ * /api/employees/get_emp_id/{id}:
  *   get:
  *     summary: Get employee by ID
  *     tags: [Employees]
@@ -146,7 +146,7 @@ router.get('/get_emp_id/:id', employeeController.getEmployeeById);
 
 /**
  * @swagger
- * /employees/delete_emp_id/{id}:
+ * /api/employees/delete_emp_id/{id}:
  *   delete:
  *     summary: Delete employee by ID
  *     tags: [Employees]

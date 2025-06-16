@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const queries = require("../queries/auth_queries");
-const pool = require("../db");
+const pool = require("../db").promise();
 
 function getDateTimeString() {
   const today = new Date();
