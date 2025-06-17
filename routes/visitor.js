@@ -3,7 +3,7 @@ const router = express.Router();
 const visitorController = require('../controllers/visitor_controller');
 const multer = require('multer');
 const qrcode = require('qrcode');
-
+const { submitDetailsWithoutOtp } = require('../controllers/visitor_controller');
 // QR code generation helper (returns a Promise)
 const generateQrCode = (visitorId) => {
   return new Promise((resolve, reject) => {
@@ -370,5 +370,166 @@ router.put('/:id/status', visitorController.updateVisitorStatusController);
  */
 router.post('/gen_card', visitorController.getVisitorQrCode);
 
+/**
+ * @swagger
+ * /visitor/submit-without-otp:
+ *   post:
+ *     summary: Submit visitor details and generate QR code (no OTP verification)
+ *     tags:
+ *       - Visitors
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               first_name:
+ *                 type: string
+ *               last_name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               gender:
+ *                 type: string
+ *               company_id:
+ *                 type: integer
+ *               department_id:
+ *                 type: integer
+ *               designation_id:
+ *                 type: integer
+ *               whom_to_meet:
+ *                 type: string
+ *               purpose:
+ *                 type: string
+ *               aadhar_no:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Visitor data submitted successfully and QR code generated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 visitor_id:
+ *                   type: integer
+ *                 qr_code:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/submit-without-otp', upload.single('image'), submitDetailsWithoutOtp);
+
+/**
+ * @swagger
+ * /visitor/update_visitor:
+ *   post:
+ *     summary: Update a visitor's information
+ *     description: Updates visitor details including an optional image.
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: formData
+ *         name: visitor_id
+ *         type: integer
+ *         required: true
+ *         description: ID of the visitor to update
+ *       - in: formData
+ *         name: image
+ *         type: file
+ *         description: Optional image file
+ *       - in: formData
+ *         name: first_name
+ *         type: string
+ *         required: true
+ *       - in: formData
+ *         name: last_name
+ *         type: string
+ *         required: true
+ *       - in: formData
+ *         name: email
+ *         type: string
+ *         required: true
+ *       - in: formData
+ *         name: phone
+ *         type: string
+ *         required: true
+ *       - in: formData
+ *         name: gender
+ *         type: string
+ *         required: true
+ *       - in: formData
+ *         name: aadhar_no
+ *         type: string
+ *         required: true
+ *       - in: formData
+ *         name: address
+ *         type: string
+ *         required: true
+ *       - in: formData
+ *         name: company_id
+ *         type: integer
+ *         required: true
+ *       - in: formData
+ *         name: department_id
+ *         type: integer
+ *         required: true
+ *       - in: formData
+ *         name: designation_id
+ *         type: integer
+ *         required: true
+ *       - in: formData
+ *         name: whom_to_meet
+ *         type: integer
+ *         required: true
+ *       - in: formData
+ *         name: purpose
+ *         type: integer
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Visitor updated successfully
+ *       400:
+ *         description: Missing required fields
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/update_visitor', upload.single('image'), visitorController.updateVisitor);
+
+
+/**
+ * @swagger
+ * /visitor/get_visitor:
+ *   post:
+ *     summary: Get visitor details by visitor_id
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - visitor_id
+ *             properties:
+ *               visitor_id:
+ *                 type: integer
+ *                 example: 33
+ *     responses:
+ *       200:
+ *         description: Visitor details retrieved successfully
+ *       404:
+ *         description: Visitor not found
+ */
+router.post('/get_visitor', visitorController.getVisitorById);
 
 module.exports = router;

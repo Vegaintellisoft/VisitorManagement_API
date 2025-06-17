@@ -549,3 +549,4 @@ router.get('/designations/:departmentId', (req, res) => {
 
 
 module.exports = router;
+

@@ -1,7 +1,7 @@
 const conn = require('../db');
 const queries = require('../queries/visitor_queries');
 const qrcode = require('qrcode');
-
+const multer = require('multer');
 // Generate QR code for visitor
 const generateQrCode = (visitorId) => {
   return new Promise((resolve, reject) => {
@@ -226,7 +226,7 @@ const getVisitorQrCode = (req, res) => {
       visitor_ID:row.visitor_id,
       first_name: row.visitor_first_name,
       last_name: row.visitor_last_name,
-      purpose:row.purpose,
+     purpose: row.purpose_text,
       email: row.email,
       image: imageUrl ,
       phone: row.phone,
@@ -239,10 +239,140 @@ const getVisitorQrCode = (req, res) => {
   });
 };
 
+const submitDetailsWithoutOtp = async (req, res) => {
+  try {
+    const data = req.body;
+    const imagePath = req.file ? req.file.path : null;
+
+    // Validate required fields
+    const requiredFields = [
+      'first_name', 'last_name', 'email', 'phone', 'gender',
+      'company_id', 'department_id', 'designation_id',
+      'whom_to_meet', 'purpose', 'aadhar_no', 'address'
+    ];
+
+    const missingFields = requiredFields.filter(field => !data[field]);
+    if (missingFields.length > 0) {
+      return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
+    }
+
+    const insertValues = [
+      data.first_name, data.last_name, data.email, data.phone, data.gender,
+      data.company_id, data.department_id, data.designation_id, data.whom_to_meet,
+      data.purpose, data.aadhar_no, data.address, imagePath,
+      null, 1 // otp is null, otp_verified is 1
+    ];
+
+    conn.query(queries.insertIntoVisitorOtp, insertValues, async (err, result) => {
+      if (err) {
+        console.error('DB Insert Error:', err);
+        return res.status(500).json({ error: 'Failed to insert visitor data' });
+      }
+
+      const visitorId = result.insertId;
+      const qrCode = await generateQrCode(visitorId);
+
+      conn.query(queries.updateVisitorQrCode, [qrCode, visitorId], (err) => {
+        if (err) {
+          console.error('DB Update QR Error:', err);
+          return res.status(500).json({ error: 'Failed to update QR code' });
+        }
+
+        res.json({
+          message: 'Visitor data submitted successfully without OTP verification',
+          visitor_id: visitorId,
+          qr_code: qrCode
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Unexpected Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const updateVisitor = async (req, res) => {
+  try {
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+
+    const data = req.body;
+    const imagePath = req.file ? req.file.path : null;
+
+    if (!data || !data.visitor_id) {
+      return res.status(400).json({ error: 'visitor_id is required' });
+    }
+
+    const requiredFields = [
+      'first_name', 'last_name', 'email', 'phone', 'gender',
+      'aadhar_no', 'address', 'company_id', 'department_id',
+      'designation_id', 'whom_to_meet', 'purpose'
+    ];
+
+    const missingFields = requiredFields.filter(field => !data[field]);
+    if (missingFields.length > 0) {
+      return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
+    }
+
+    let updateQuery = `
+      UPDATE visitors SET
+        first_name = ?, last_name = ?, email = ?, phone = ?, gender = ?, 
+        aadhar_no = ?, address = ?, company_id = ?, department_id = ?, 
+        designation_id = ?, whom_to_meet = ?, purpose = ?
+    `;
+    const params = [
+      data.first_name, data.last_name, data.email, data.phone, data.gender,
+      data.aadhar_no, data.address, data.company_id, data.department_id,
+      data.designation_id, data.whom_to_meet, data.purpose
+    ];
+
+    if (imagePath) {
+      updateQuery += `, image = ?`;
+      params.push(imagePath);
+    }
+
+    updateQuery += ` WHERE visitor_id = ?`;
+    params.push(data.visitor_id);
+
+    conn.query(updateQuery, params, (err, result) => {
+      if (err) {
+        console.error('DB Update Error:', err);
+        return res.status(500).json({ error: 'Failed to update visitor' });
+      }
+
+      res.json({ message: 'Visitor updated successfully' });
+    });
+
+  } catch (error) {
+    console.error('Unexpected Error:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+};
+
+const getVisitorById = async (req, res) => {
+  const { visitor_id } = req.body;
+
+  try {
+    const [rows] = await conn.promise().query(
+      'SELECT * FROM visitors WHERE visitor_id = ?', [visitor_id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Visitor not found' });
+    }
+
+    res.json({ message: 'Visitor fetched successfully', data: rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch visitor', details: err.message || err });
+  }
+};
+
 
 
 
 module.exports = {
+  getVisitorById,
+  updateVisitor,
    getVisitorQrCode,
   updateVisitorStatusController,
   getVisitorDetails,
@@ -250,5 +380,6 @@ module.exports = {
   sendOtp,
   verifyOtp,
   submitDetails,
-  handleQrScan
+  handleQrScan,
+  submitDetailsWithoutOtp
 };

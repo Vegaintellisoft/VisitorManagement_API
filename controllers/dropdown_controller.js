@@ -38,8 +38,8 @@ exports.getDesignationsByDepartment = (req, res) => {
 
 // Get active employees where company and designation active
 exports.getEmployeesByDesignation = (req, res) => {
-  const { designation_id } = req.body;
-  db.query(queries.getEmployeesByDesignation, [designation_id], (err, results) => {
+  const { designationId } = req.body;
+  db.query(queries.getEmployeesByDesignation, [designationId], (err, results) => {
     if (err) {
       console.error('Error fetching employees:', err);
       return res.status(500).json({ error: 'Database error' });
@@ -47,3 +47,15 @@ exports.getEmployeesByDesignation = (req, res) => {
     res.json(results);
   });
 };
+
+exports.getAllPurposes = (req, res) => {
+  db.query(queries.getAllPurposes, (err, results) => {
+    if (err) {
+      console.error('Error fetching purposes:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json(results);
+  });
+};
+
+

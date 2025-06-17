@@ -3,7 +3,7 @@
 const getActiveCompanies = `
   SELECT company_id, company_name 
   FROM companies 
-  WHERE status = 'Active'
+  WHERE status = 'Active';
 `;
 
 // Get active departments by active company
@@ -11,7 +11,7 @@ const getDepartmentsByCompany = `
   SELECT d.department_id, d.dept_name
   FROM departments d
   JOIN companies c ON d.company_id = c.company_id
-  WHERE d.company_id = ? AND c.status = 'Active' AND d.status = 'Active'
+  WHERE d.company_id = ? AND c.status = 'Active' AND d.status = 'Active';
 `;
 
 // Get active designations by department where company is active
@@ -20,19 +20,23 @@ const getDesignationsByDepartment = `
   FROM designations des
   JOIN departments d ON des.department_id = d.department_id
   JOIN companies c ON des.company_id = c.company_id
-  WHERE des.department_id = ? AND c.status = 'Active' AND des.status = 'Active' AND d.status = 'Active'
+  WHERE des.department_id = ? AND c.status = 'Active' AND des.status = 'Active' AND d.status = 'Active';
 `;
 
 // Get active employees by designation where company is active
 const getEmployeesByDesignation = `
-  SELECT e.emp_id as emp_id, CONCAT(e.first_name, ' ', e.last_name) as emp_name
+  SELECT e.emp_id as id, CONCAT(e.first_name, ' ', e.last_name) as emp_name
   FROM employees e
   JOIN designations des ON e.designation_id = des.designation_id
   JOIN companies c ON e.company_id = c.company_id
-  WHERE e.designation_id = ? AND c.status = 'Active' AND e.status = 'Active' AND des.status = 'Active'
+  WHERE e.designation_id = ? AND c.status = 'Active' AND e.status = 'Active' AND des.status = 'Active';
+`;
+const getAllPurposes = `
+ SELECT purpose_id, purpose AS purpose FROM purpose; 
 `;
 
 module.exports = {
+  getAllPurposes,
  getEmployeesByDesignation,
  getDesignationsByDepartment,
  getDepartmentsByCompany,

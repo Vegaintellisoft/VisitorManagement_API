@@ -62,6 +62,8 @@ const getVisitorQrCodeById = `SELECT
   v.first_name AS visitor_first_name, 
   v.last_name AS visitor_last_name, 
   v.email, 
+  p.purpose AS purpose_text,         -- Get text from purpose table
+  v.visitor_id,
   v.phone, 
   v.image,
   v.whom_to_meet,
@@ -70,11 +72,33 @@ const getVisitorQrCodeById = `SELECT
   e.last_name AS employee_last_name
 FROM visitors v
 JOIN employees e ON v.whom_to_meet = e.emp_id
-WHERE v.visitor_id = ? AND v.qr_status = 'active'
+JOIN purpose p ON v.purpose = p.purpose_id    -- This joins purpose_id to visitors.purpose
+WHERE v.visitor_id = ? 
+  AND v.qr_status = 'active'
 LIMIT 1;
 `;
 
+const insertIntoVisitorOtp = `
+  INSERT INTO visitors (
+    first_name, last_name, email, phone, gender,
+    company_id, department_id, designation_id, whom_to_meet,
+    purpose, aadhar_no, address, image,
+    otp, otp_verified, qr_status
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+`;
+
+const updateVisitorQrCode = `
+  UPDATE visitors SET qr_code = ? WHERE visitor_id = ?
+`;
+
+const updateVisitorQuery = `
+  UPDATE visitors SET
+    first_name=?, last_name=?, email=?, phone=?, gender=?, aadhar_no=?, address=?,
+    company_id=?, department_id=?, designation_id=?, whom_to_meet=?, purpose=?${'${imageClause}'}
+  WHERE visitor_id=?
+`;
 module.exports = {
+  updateVisitorQuery,
   getVisitorQrCodeById,
   updateVisitorStatusQuery,
   getAllVisitorsQuery,
@@ -86,5 +110,7 @@ module.exports = {
     selectTempVisitorByPhone,
   updateTempVisitor,
   insertIntoVisitorMain,
-  getVisitorDetailsQuery
+  getVisitorDetailsQuery,
+  updateVisitorQrCode,
+  insertIntoVisitorOtp
 };
