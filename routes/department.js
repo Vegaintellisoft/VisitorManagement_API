@@ -6,46 +6,43 @@ const departmentController = require('../controllers/department_controller');
  * @swagger
  * tags:
  *   name: Departments
- *   description: Department management APIs
+ *   description: Manage departments under companies
  */
 
 /**
  * @swagger
  * /api/departments:
  *   get:
- *     summary: Get all departments with company name
+ *     summary: Get all departments
  *     tags: [Departments]
  *     responses:
  *       200:
- *         description: List of departments with company name
+ *         description: A list of departments
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   company_id:
- *                     type: integer
- *                   name:
- *                     type: string
- *                   status:
- *                     type: string
- *                   company_name:
- *                     type: string
- *       500:
- *         description: Server error
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Data retrieved successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       department_id:
+ *                         type: integer
+ *                       company_id:
+ *                         type: integer
+ *                       dept_name:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                       company_name:
+ *                         type: string
  */
-router.get('/', async (req, res) => {
-  try {
-    const departments = await departmentController.getAll();
-    res.status(200).json(departments);
-  } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
-  }
-});
+router.get('/departments', departmentController.getAll);
 
 /**
  * @swagger
@@ -57,47 +54,37 @@ router.get('/', async (req, res) => {
  *       - in: path
  *         name: id
  *         required: true
- *         description: Department ID
+ *         description: Numeric ID of the department to retrieve
  *         schema:
  *           type: integer
  *     responses:
  *       200:
- *         description: Department object
+ *         description: A single department's details
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 id:
+ *                 department_id:
  *                   type: integer
  *                 company_id:
  *                   type: integer
- *                 name:
+ *                 dept_name:
  *                   type: string
  *                 status:
  *                   type: string
  *       404:
  *         description: Department not found
- *       500:
- *         description: Server error
  */
-router.get('/:id', async (req, res) => {
-  try {
-    const department = await departmentController.getById(req.params.id);
-    res.status(200).json(department);
-  } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
-  }
-});
+router.get('/departments/:id', departmentController.getById);
 
 /**
  * @swagger
- * /api/departments:
+ * /api/departments/create:
  *   post:
- *     summary: Add a new department
+ *     summary: Create a new department
  *     tags: [Departments]
  *     requestBody:
- *       description: Department data
  *       required: true
  *       content:
  *         application/json:
@@ -116,43 +103,24 @@ router.get('/:id', async (req, res) => {
  *                 type: string
  *                 enum: [Active, Inactive]
  *     responses:
- *       200:
+ *       201:
  *         description: Department created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *       500:
- *         description: Server error
  */
-router.post('/', async (req, res) => {
-  try {
-    const { company_id, name, status } = req.body;
-    const newDepartment = await departmentController.create(company_id, name, status);
-    res.status(200).json(newDepartment);
-  } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
-  }
-});
+router.post('/departments/create', departmentController.create);
 
 /**
  * @swagger
- * /api/departments/{id}:
- *   put:
- *     summary: Update department
+ * /api/departments/update/{id}:
+ *   patch:
+ *     summary: Update department details
  *     tags: [Departments]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: Department ID
  *         schema:
  *           type: integer
  *     requestBody:
- *       description: Updated department data
  *       required: true
  *       content:
  *         application/json:
@@ -173,24 +141,26 @@ router.post('/', async (req, res) => {
  *     responses:
  *       200:
  *         description: Department updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       500:
- *         description: Server error
  */
-router.put('/:id', async (req, res) => {
-  try {
-    const { company_id, name, status } = req.body;
-    const result = await departmentController.update(req.params.id, company_id, name, status);
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
-  }
-});
+router.patch('/departments/update/:id', departmentController.update);
+
+/**
+ * @swagger
+ * /api/departments/deactivate/{id}:
+ *   patch:
+ *     summary: Mark a department as Inactive
+ *     tags: [Departments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Department deactivated successfully
+ */
+
+router.patch('/departments/deactivate/:id', departmentController.deleteDepartment);
 
 module.exports = router;

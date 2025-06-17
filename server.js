@@ -49,30 +49,41 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 const companyRoutes = require("./routes/company");
 const departmentRoutes = require("./routes/department");
-//const openRoutes = require("./routes/dropdown1");
 const designationRoutes = require("./routes/designation");
-const employeeRoutes = require("./routes/employees");
+const employeeRoutes = require("./routes/employees_routes");
+//const employesroutes = require("./routes/employees")
 const uploadRoutes = require("./routes/upload");
 const roleRoutes = require("./routes/role_routes");
 const authRoutes = require("./routes/auth_routes");
-//const visitorRoutes = require('./routes/visitor');
 const dropdownRoutes = require('./routes/dropdownRoutes');
-//const visitorRoutes = require('./routes/visitor');
 const visitorRoutes = require('./routes/visitor');
+const path = require('path');
+const appointmentRoutes = require('./routes/appointment_routes');
+const selectRoutes = require('./routes/select_routes');
+const visitorreportRoutes = require('./routes/visitor_reports_routes')
+const appointmentreportRoutes = require('./routes/appointment_report_routes')
+// const dropdownRoutes = require('./routes/');
 
+// app.use('/api', dropdownRoutes);
+app.use('/api', appointmentreportRoutes);
+app.use('/api', visitorreportRoutes);
+// Serve images from 'uploads' directory at /uploads URL
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/appointments', appointmentRoutes);
 app.use(express.json());
+app.use('/api/selects', selectRoutes);
 app.use('/visitor', visitorRoutes);
 app.use('/api', dropdownRoutes);
-//app.use('/api/visitor', visitorRoutes);
+
 app.use('/api', companyRoutes);
-app.use("/api/employees", employeeRoutes);
+app.use("/employees", employeeRoutes);
+//app.use("/api/employees", employesroutes);
 app.use("/api/designations", designationRoutes);
-//app.use("/api/open", openRoutes);
 app.use("/companies", companyRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api", uploadRoutes);
@@ -85,7 +96,9 @@ app.get("/", (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
+
 app.listen(PORT, () => {
   console.log(`API running on http://localhost:${PORT}`);
+
 });
