@@ -79,7 +79,6 @@ app.use(express.json());
 app.use('/api/selects', selectRoutes);
 app.use('/visitor', visitorRoutes);
 app.use('/api', dropdownRoutes);
-
 app.use('/api', companyRoutes);
 app.use("/employees", employeeRoutes);
 //app.use("/api/employees", employesroutes);

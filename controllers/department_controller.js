@@ -28,6 +28,7 @@ exports.getById = async (id) => {
   } catch (error) {
     throw { status: error.status || 500, message: error.message || "Internal server error" };
   }
+};
 
 exports.getById = (req, res) => {
   const { id } = req.params;
