@@ -6,7 +6,8 @@ const {
   getAllEmployeesQuery,
   getEmployeeByIdQuery,
   deleteEmployeeByIdQuery,
-  checkEmployeeExistsQuery
+  checkEmployeeExistsQuery,
+  getEmployeeList
 } = require('../queries/employees_queries');
 
 // Add new employee
@@ -71,6 +72,13 @@ exports.getAllEmployees = (req, res) => {
     res.json(results);
   });
 };
+
+exports.listEmployees = (req, res) =>{
+  db.query(getEmployeeList, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+}
 
 // Get employee by ID
 exports.getEmployeeById = (req, res) => {

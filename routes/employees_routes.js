@@ -124,6 +124,59 @@ router.get('/get_all_employee', employeeController.getAllEmployees);
 
 /**
  * @swagger
+ * /list_employees:
+ *   get:
+ *     summary: Get the list of all employees with their company name
+ *     tags:
+ *       - Employees
+ *     responses:
+ *       200:
+ *         description: List of employees retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   emp_id:
+ *                     type: integer
+ *                     example: 101
+ *                   first_name:
+ *                     type: string
+ *                     example: John
+ *                   last_name:
+ *                     type: string
+ *                     example: Doe
+ *                   email:
+ *                     type: string
+ *                     example: john.doe@example.com
+ *                   phone:
+ *                     type: string
+ *                     example: "+1-555-1234"
+ *                   status:
+ *                     type: string
+ *                     example: Active
+ *                   company_name:
+ *                     type: string
+ *                     example: ABC Corp
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+
+router.get('/list_employees', employeeController.listEmployees);
+
+
+/**
+ * @swagger
  * /employees/get_emp_id/{id}:
  *   get:
  *     summary: Get employee by ID

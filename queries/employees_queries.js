@@ -15,6 +15,12 @@ const updateEmployeeQuery = `
   WHERE emp_id = ?
 `;
 
+const getEmployeeList = `
+  SELECT e.emp_id, e.first_name, e.last_name, e.email, e.phone, e.status, c.company_name
+  FROM employees e
+  LEFT JOIN companies c ON e.company_id = c.company_id;
+`
+
 // Get all employees with related names
 const getAllEmployeesQuery = `
   SELECT e.*, 
@@ -47,6 +53,7 @@ module.exports = {
   insertEmployeeQuery,
   updateEmployeeQuery,
   getAllEmployeesQuery,
+  getEmployeeList,
   getEmployeeByIdQuery,
   deleteEmployeeByIdQuery,
   checkEmployeeExistsQuery
