@@ -15,7 +15,6 @@ exports.getCompanies = (req, res) => {
 // Get active departments for active company
 exports.getDepartmentsByCompany = (req, res) => {
   const companyId = req.params.cid;
-  console.log(req.params)
   db.query(queries.getDepartmentsByCompany, [companyId], (err, results) => {
     if (err) {
       console.error('Error fetching departments:', err);

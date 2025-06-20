@@ -3,8 +3,8 @@ const insertEmployeeQuery = `
   INSERT INTO employees (
     first_name, last_name, email, phone, gender,
     company_id, department_id, designation_id,
-    image, password
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    image, password, role_id, joining_date, remarks, status
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 
 // Update existing employee
