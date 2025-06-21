@@ -6,7 +6,7 @@ exports.getAll = (req, res) => {
     if (err) {
       return res.status(500).send({ message: 'Error fetching departments', error: err });
     }
-    res.status(200).json({ message: 'Departments retrieved successfully', data: results });
+    res.status(200).json( results );
   });
 };
 
