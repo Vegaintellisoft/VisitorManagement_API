@@ -22,7 +22,7 @@ async function loginUser(emailID, password) {
     }
     const accessToken = jwt.sign(
                                   {
-                                    userId: user.emp_id,
+                                    userId: user.id,
                                     roleId: user.role_id,
                                     emailId: emailID,
                                     currDate: getDateTimeString(),
@@ -32,7 +32,7 @@ async function loginUser(emailID, password) {
                                 );
     const refreshToken = jwt.sign(
                                   {
-                                    userId: user.emp_id,
+                                    userId: user.id,
                                     roleId: user.role_id,
                                     emailId: emailID,
                                     currDate: getDateTimeString(),
@@ -42,7 +42,7 @@ async function loginUser(emailID, password) {
                                 );
 
     const [resp] = await pool.execute(queries.updateRefreshToken, [
-      user.emp_id,
+      user.id,
       refreshToken,
     ]);
     return {

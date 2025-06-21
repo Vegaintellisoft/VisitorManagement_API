@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const employeeController = require('../controllers/employees_controller');
 const upload = require('../utils/upload'); // multer middleware
-const authenticateToken = require('../utils/authenticateToken') // authentication middleware
 // const express = require('express');
 // const router = express.Router();
 // const employeeController = require('../controllers/employees_controller');
@@ -17,7 +16,7 @@ const authenticateToken = require('../utils/authenticateToken') // authenticatio
 
 /**
  * @swagger
- * /employees/add_employee:
+ * /employees/add-employee:
  *   post:
  *     summary: Add a new employee
  *     tags: [Employees]
@@ -59,11 +58,11 @@ const authenticateToken = require('../utils/authenticateToken') // authenticatio
  *       500:
  *         description: Server error
  */
-router.post('/add_employee', authenticateToken, upload.single('image'), employeeController.addEmployee);
+router.post('/add-employee', upload.single('image'), employeeController.addEmployee);
 
 /**
  * @swagger
- * /employees/update_employee/{id}:
+ * /employees/update-employee/{id}:
  *   put:
  *     summary: Update an employee by ID
  *     tags: [Employees]
@@ -107,7 +106,7 @@ router.post('/add_employee', authenticateToken, upload.single('image'), employee
  *       500:
  *         description: Server error
  */
-router.patch('/update_employee/:id', authenticateToken, upload.single('image'), employeeController.updateEmployee);
+router.put('/update-employee/:id', upload.single('image'), employeeController.updateEmployee);
 
 /**
  * @swagger
@@ -121,60 +120,7 @@ router.patch('/update_employee/:id', authenticateToken, upload.single('image'), 
  *       500:
  *         description: Server error
  */
-router.get('/get_all_employee', authenticateToken, employeeController.getAllEmployees);
-
-/**
- * @swagger
- * /list_employees:
- *   get:
- *     summary: Get the list of all employees with their company name
- *     tags:
- *       - Employees
- *     responses:
- *       200:
- *         description: List of employees retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   emp_id:
- *                     type: integer
- *                     example: 101
- *                   first_name:
- *                     type: string
- *                     example: John
- *                   last_name:
- *                     type: string
- *                     example: Doe
- *                   email:
- *                     type: string
- *                     example: john.doe@example.com
- *                   phone:
- *                     type: string
- *                     example: "+1-555-1234"
- *                   status:
- *                     type: string
- *                     example: Active
- *                   company_name:
- *                     type: string
- *                     example: ABC Corp
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Internal server error"
- */
-
-router.get('/list_employees',authenticateToken, employeeController.listEmployees);
-
+router.get('/get_all_employee', employeeController.getAllEmployees);
 
 /**
  * @swagger
@@ -196,7 +142,7 @@ router.get('/list_employees',authenticateToken, employeeController.listEmployees
  *       500:
  *         description: Server error
  */
-router.get('/get_emp_id/:id',authenticateToken, employeeController.getEmployeeById);
+router.get('/get_emp_id/:id', employeeController.getEmployeeById);
 
 /**
  * @swagger
@@ -216,6 +162,6 @@ router.get('/get_emp_id/:id',authenticateToken, employeeController.getEmployeeBy
  *       500:
  *         description: Server error
  */
-router.delete('/delete_emp_id/:id', authenticateToken, employeeController.deleteEmployee);
+router.delete('/delete_emp_id/:id', employeeController.deleteEmployee);
 
 module.exports = router;

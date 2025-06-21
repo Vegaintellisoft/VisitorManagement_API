@@ -16,7 +16,7 @@ const getDepartmentsByCompany = `
 
 // Get active designations by department where company is active
 const getDesignationsByDepartment = `
-  SELECT des.designation_id, des.designation_name
+  SELECT des.designation_id, des.desgnation_name
   FROM designations des
   JOIN departments d ON des.department_id = d.department_id
   JOIN companies c ON des.company_id = c.company_id

@@ -3,8 +3,8 @@ const insertEmployeeQuery = `
   INSERT INTO employees (
     first_name, last_name, email, phone, gender,
     company_id, department_id, designation_id,
-    image, password, role_id, joining_date, remarks, status
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    image, password
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 
 // Update existing employee
@@ -14,12 +14,6 @@ const updateEmployeeQuery = `
     company_id = ?, department_id = ?, designation_id = ?, image = ?
   WHERE emp_id = ?
 `;
-
-const getEmployeeList = `
-  SELECT e.emp_id, e.first_name, e.last_name, e.email, e.phone, e.status, c.company_name
-  FROM employees e
-  LEFT JOIN companies c ON e.company_id = c.company_id;
-`
 
 // Get all employees with related names
 const getAllEmployeesQuery = `
@@ -53,7 +47,6 @@ module.exports = {
   insertEmployeeQuery,
   updateEmployeeQuery,
   getAllEmployeesQuery,
-  getEmployeeList,
   getEmployeeByIdQuery,
   deleteEmployeeByIdQuery,
   checkEmployeeExistsQuery
