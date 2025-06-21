@@ -14,7 +14,7 @@ exports.getCompanies = (req, res) => {
 
 // Get active departments for active company
 exports.getDepartmentsByCompany = (req, res) => {
-  const { companyId } = req.body;
+  const companyId = req.params.cid;
   db.query(queries.getDepartmentsByCompany, [companyId], (err, results) => {
     if (err) {
       console.error('Error fetching departments:', err);
@@ -26,7 +26,7 @@ exports.getDepartmentsByCompany = (req, res) => {
 
 // Get active designations where company and department active
 exports.getDesignationsByDepartment = (req, res) => {
-  const { departmentId } = req.body;
+  const departmentId = req.params.did;
   db.query(queries.getDesignationsByDepartment, [departmentId], (err, results) => {
     if (err) {
       console.error('Error fetching designations:', err);
@@ -38,7 +38,7 @@ exports.getDesignationsByDepartment = (req, res) => {
 
 // Get active employees where company and designation active
 exports.getEmployeesByDesignation = (req, res) => {
-  const { designationId } = req.body;
+  const designationId = req.params.did;
   db.query(queries.getEmployeesByDesignation, [designationId], (err, results) => {
     if (err) {
       console.error('Error fetching employees:', err);

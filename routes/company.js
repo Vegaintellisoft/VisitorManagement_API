@@ -5,7 +5,42 @@ const router = express.Router();
 
 /**
  * @swagger
- * /companies:
+ * /companies/active:
+ *   get:
+ *     summary: Get all active companies
+ *     tags:
+ *       - Companies
+ *     responses:
+ *       200:
+ *         description: List of companies
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *       500:
+ *         description: Server error
+ */
+router.get("/active", async (req, res) => {
+  try {
+    const companies = await companyController.getActiveCompanies();
+    res.status(200).json(companies);
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /companies/all:
  *   get:
  *     summary: Get all companies
  *     tags:
@@ -29,9 +64,9 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.get("/", async (req, res) => {
+router.get("/all", async (req, res) => {
   try {
-    const companies = await companyController.getAll();
+    const companies = await companyController.getAllCompanies();
     res.status(200).json(companies);
   } catch (error) {
     res.status(error.status || 500).json({ error: error.message });

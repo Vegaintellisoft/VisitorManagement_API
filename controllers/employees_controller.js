@@ -6,15 +6,20 @@ const {
   getAllEmployeesQuery,
   getEmployeeByIdQuery,
   deleteEmployeeByIdQuery,
-  checkEmployeeExistsQuery
+  checkEmployeeExistsQuery,
+  getEmployeeList
 } = require('../queries/employees_queries');
 
 // Add new employee
 exports.addEmployee = async (req, res) => {
   const {
     first_name, last_name, email, phone, gender,
-    company_id, department_id, designation_id, password
-  } = req.body;
+    company, department, designation, password,role, joining_date,remarks, status
+  } = JSON.parse(req.body.jsondata);
+  // console.log("add employee controller:",req.file)
+  if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
 
   const image = req.file ? req.file.filename : null;
 
@@ -32,8 +37,9 @@ exports.addEmployee = async (req, res) => {
 
       db.query(
         insertEmployeeQuery,
-        [first_name, last_name, email, phone, gender, company_id, department_id, designation_id, image, hashedPassword],
+        [first_name, last_name, email, phone, gender, company, department, designation, image, hashedPassword, role, joining_date, remarks, status],
         (err, result) => {
+          // console.log("insertion response",result)
           if (err) return res.status(500).json({ error: err.message });
           res.status(201).json({ message: 'Employee added successfully', emp_id: result.insertId });
         }
@@ -45,23 +51,24 @@ exports.addEmployee = async (req, res) => {
 };
 
 // Update employee
-exports.updateEmployee = (req, res) => {
+exports.updateEmployee = async (req, res) => {
   const emp_id = req.params.id;
-  const {
-    first_name, last_name, email, phone, gender,
-    company_id, department_id, designation_id
-  } = req.body;
-
-  const image = req.file ? req.file.filename : req.body.image;
-
-  db.query(
-    updateEmployeeQuery,
-    [first_name, last_name, email, phone, gender, company_id, department_id, designation_id, image, emp_id],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: 'Employee updated successfully' });
+  const updates = JSON.parse(req.body.jsondata);
+  if (req.file){
+      updates["image"] = req.file.filename
+  }
+  if (!Object.keys(updates).length) {
+      return res.status(400).json({ error: 'No fields provided for update' });
     }
-  );
+  const fields = Object.keys(updates).map((key) => `${key} = ?`).join(', ');
+  const values = Object.values(updates);
+  try{
+    await db.promise().query(`UPDATE employees SET ${fields} WHERE emp_id = ?`, [...values, emp_id]);
+    res.status(201).json({ message: 'Employee updated successfully'});
+  }catch(error){
+      console.error("Database Error:", error.message);
+      throw ({ status:500 , message:"Database operation failed"});
+  }
 };
 
 // Get all employees
@@ -71,6 +78,13 @@ exports.getAllEmployees = (req, res) => {
     res.json(results);
   });
 };
+
+exports.listEmployees = (req, res) =>{
+  db.query(getEmployeeList, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+}
 
 // Get employee by ID
 exports.getEmployeeById = (req, res) => {

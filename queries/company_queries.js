@@ -1,10 +1,13 @@
-
 const getAllCompanies = `
-  SELECT * FROM companies WHERE status = 'active';
+  SELECT * FROM companies where visibility = true;
+`;
+
+const getActiveCompanies = `
+  SELECT * FROM companies WHERE status = 'Active' AND visibility = true;
 `;
 
 const getCompanyById = `
- SELECT * FROM companies WHERE company_id = ? AND status = 'active';
+ SELECT * FROM companies WHERE company_id = ? AND status = 'Active' AND visibility = true;
 `;
 
 const createCompany = `
@@ -16,11 +19,12 @@ const updateCompany = `
 `;
 
 const deleteCompany = `
-  DELETE FROM companies WHERE company_id = ?;
+  UPDATE companies SET visibility = false WHERE company_id = ?;
 `;
 
 module.exports = {
   getAllCompanies,
+  getActiveCompanies,
   getCompanyById,
   createCompany,
   updateCompany,
