@@ -1,18 +1,19 @@
 const getAllDepartments = `
   SELECT d.*, c.name as company_name 
   FROM departments d 
-  JOIN companies c ON d.company_id = c.id;
+  JOIN companies c ON d.company_id = c.id
+  WHERE visibility=true;
 `;
 
 const getDepartmentByCompany = `
   SELECT d.*
   FROM departments d 
   JOIN companies c ON d.company_id = c.id
-  WHERE c.id = ?;
+  WHERE c.id = ? AND visibility=true;
 `
 
 const getDepartmentById = `
-  SELECT * FROM departments WHERE department_id = ?;
+  SELECT * FROM departments WHERE department_id = ? AND visibility=true;
 `;
 
 const createDepartment = `
@@ -24,7 +25,7 @@ const updateDepartment = `
 `;
 
 const deleteDepartment = `
-  DELETE FROM departments WHERE id = ?;
+  UPDATE departments SET visibility=false WHERE department_id=?;
 `;
 
 module.exports = {

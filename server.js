@@ -90,7 +90,7 @@ app.use('/api', companyRoutes);
 app.use("/employees", employeeRoutes);
 app.use("/api/designations", designationRoutes);
 app.use("/companies", companyRoutes);
-app.use("/api/departments", departmentRoutes);
+app.use("/departments", departmentRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/auth", authRoutes);
