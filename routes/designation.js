@@ -1,4 +1,4 @@
- const express = require('express');
+const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
@@ -16,7 +16,7 @@ const db = require('../db');
  *     Designation:
  *       type: object
  *       properties:
- *         id:
+ *         designation_id:
  *           type: integer
  *           example: 1
  *         company_id:
@@ -25,7 +25,7 @@ const db = require('../db');
  *         department_id:
  *           type: integer
  *           example: 3
- *         name:
+ *         designation_name:
  *           type: string
  *           example: "Senior Developer"
  *         status:
@@ -42,7 +42,7 @@ const db = require('../db');
 
 /**
  * @swagger
- * /api/designations:
+ * /api/designations/all:
  *   get:
  *     summary: Get all designations with company and department names
  *     tags: [Designations]
@@ -58,15 +58,19 @@ const db = require('../db');
  *       500:
  *         description: Server error
  */
-router.get('/', (req, res) => {
+router.get('/all', (req, res) => {
   const sql = `
-    SELECT d.*, c.name AS company_name, dept.name AS department_name
+    SELECT d.*, c.company_name, dept.dept_name AS department_name
     FROM designations d
-    JOIN companies c ON d.company_id = c.id
-    JOIN departments dept ON d.department_id = dept.id
+    JOIN companies c ON d.company_id = c.company_id
+    JOIN departments dept ON d.department_id = dept.department_id
+    WHERE d.visibility = true;
   `;
   db.query(sql, (err, results) => {
-    if (err) return res.status(500).json(err);
+    if (err){
+      console.log(err)
+      return res.status(500).json(err);
+    } 
     res.json(results);
   });
 });
@@ -95,50 +99,13 @@ router.get('/', (req, res) => {
  *         description: Server error
  */
 router.get('/:id', (req, res) => {
-  const sql = `SELECT * FROM designations WHERE id = ?`;
+  const sql = `SELECT * FROM designations WHERE designation_id = ?`;
   db.query(sql, [req.params.id], (err, result) => {
     if (err) return res.status(500).json(err);
     res.json(result[0]);
   });
 });
 
-/**
- * @swagger
- * /api/designations/departments/{companyId}:
- *   get:
- *     summary: Get active departments by company ID (for cascading dropdown)
- *     tags: [Designations]
- *     parameters:
- *       - in: path
- *         name: companyId
- *         required: true
- *         schema:
- *           type: integer
- *         description: Company ID
- *     responses:
- *       200:
- *         description: List of active departments for the company
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   name:
- *                     type: string
- *       500:
- *         description: Server error
- */
-router.get('/departments/:companyId', (req, res) => {
-  const sql = `SELECT id, name FROM departments WHERE company_id = ? AND status = 'Active'`;
-  db.query(sql, [req.params.companyId], (err, results) => {
-    if (err) return res.status(500).json(err);
-    res.json(results);
-  });
-});
 
 /**
  * @swagger
@@ -187,9 +154,9 @@ router.get('/departments/:companyId', (req, res) => {
  */
 router.post('/', (req, res) => {
   const { company_id, department_id, name, status } = req.body;
-  const sql = `INSERT INTO designations (company_id, department_id, name, status) VALUES (?, ?, ?, ?)`;
+  const sql = `INSERT INTO designations (company_id, department_id, designation_name, status) VALUES (?, ?, ?, ?)`;
   db.query(sql, [company_id, department_id, name, status], (err, result) => {
-    if (err) return res.status(500).json(err);
+    if (err) return res.status(500).json({error: err});
     res.json({ id: result.insertId });
   });
 });
@@ -248,11 +215,20 @@ router.post('/', (req, res) => {
  */
 router.put('/:id', (req, res) => {
   const { company_id, department_id, name, status } = req.body;
-  const sql = `UPDATE designations SET company_id = ?, department_id = ?, name = ?, status = ? WHERE id = ?`;
+  const sql = `UPDATE designations SET company_id = ?, department_id = ?, designation_name = ?, status = ? WHERE designation_id = ?`;
   db.query(sql, [company_id, department_id, name, status, req.params.id], (err) => {
     if (err) return res.status(500).json(err);
     res.json({ message: 'Designation updated' });
   });
 });
+
+router.delete('/:id', (req,res)=>{
+  const designation_id = req.params.id
+  const sql = `UPDATE designations SET visibility = false WHERE designation_id = ?`;
+  db.query(sql, [designation_id], (err) => {
+    if (err) return res.status(500).json(err);
+    res.json({ message: 'Designation updated' });
+  });
+})
 
 module.exports = router;
