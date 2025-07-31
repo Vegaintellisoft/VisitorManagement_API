@@ -11,7 +11,7 @@ const departmentController = require('../controllers/department_controller');
 
 /**
  * @swagger
- * /api/departments:
+ * /departments:
  *   get:
  *     summary: Get all departments
  *     tags: [Departments]
@@ -42,11 +42,11 @@ const departmentController = require('../controllers/department_controller');
  *                       company_name:
  *                         type: string
  */
-router.get('/departments', departmentController.getAll);
+router.get('/', departmentController.getAll);
 
 /**
  * @swagger
- * /api/departments/{id}:
+ * /departments/{id}:
  *   get:
  *     summary: Get department by ID
  *     tags: [Departments]
@@ -76,21 +76,11 @@ router.get('/departments', departmentController.getAll);
  *       404:
  *         description: Department not found
  */
-router.get('/departments/:id', departmentController.getById);
-
-router.get('/company/:company_id', async(req,res)=>{
-  const {company_id} = req.params
-  try{
-    const departments = await departmentController.getDepartmetsByCompany(company_id);
-    res.status(200).json(departments);
-  } catch(error){
-    res.status(error.status || 500).json({ error: error.message });
-  }
-});
+router.get('/:id', departmentController.getById);
 
 /**
  * @swagger
- * /api/departments/create:
+ * /departments/create:
  *   post:
  *     summary: Create a new department
  *     tags: [Departments]
@@ -116,12 +106,12 @@ router.get('/company/:company_id', async(req,res)=>{
  *       201:
  *         description: Department created successfully
  */
-router.post('/departments/create', departmentController.create);
+router.post('/create', departmentController.create);
 
 /**
  * @swagger
- * /api/departments/update/{id}:
- *   patch:
+ * /departments/update/{id}:
+ *   put:
  *     summary: Update department details
  *     tags: [Departments]
  *     parameters:
@@ -152,12 +142,12 @@ router.post('/departments/create', departmentController.create);
  *       200:
  *         description: Department updated successfully
  */
-router.patch('/departments/update/:id', departmentController.update);
+router.put('/update/:id', departmentController.update);
 
 /**
  * @swagger
- * /api/departments/deactivate/{id}:
- *   patch:
+ * /departments/delete/{id}:
+ *   delete:
  *     summary: Mark a department as Inactive
  *     tags: [Departments]
  *     parameters:
@@ -171,6 +161,6 @@ router.patch('/departments/update/:id', departmentController.update);
  *         description: Department deactivated successfully
  */
 
-router.patch('/departments/deactivate/:id', departmentController.deleteDepartment);
+router.delete('/delete/:id', departmentController.deleteDepartment);
 
 module.exports = router;

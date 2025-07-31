@@ -6,18 +6,8 @@ exports.getAll = (req, res) => {
     if (err) {
       return res.status(500).send({ message: 'Error fetching departments', error: err });
     }
-    res.status(200).json({ message: 'Departments retrieved successfully', data: results });
+    res.status(200).json( results );
   });
-};
-
-
-exports.getDepartmetsByCompany = async (cid) => {
-  try {
-    const [rows] = await db.promise().query(queries.getDepartmentByCompany,[cid]);
-    return rows;
-  } catch (error) {
-    throw { status: 500, message: "Failed to fetch departments" };
-  }
 };
 
 exports.getById = async (id) => {
