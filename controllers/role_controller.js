@@ -1,5 +1,5 @@
-const pool = require("../db").promise()
-const queries = require('../queries/role_queries')
+const pool = require("../db").promise;
+const queries = require('../queries/role_queries');
 
 
 async function getModules(){

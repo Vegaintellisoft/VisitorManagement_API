@@ -60,11 +60,11 @@ const db = require('../db');
  */
 router.get('/all', (req, res) => {
   const sql = `
-    SELECT d.*, c.company_name, dept.dept_name AS department_name
+    SELECT d.desgnation_name as designation_name, d.*, c.company_name, dept.dept_name AS department_name
     FROM designations d
     JOIN companies c ON d.company_id = c.company_id
     JOIN departments dept ON d.department_id = dept.department_id
-    WHERE d.visibility = true;
+    WHERE d.status = 'Active';
   `;
   db.query(sql, (err, results) => {
     if (err){
@@ -154,7 +154,7 @@ router.get('/:id', (req, res) => {
  */
 router.post('/', (req, res) => {
   const { company_id, department_id, name, status } = req.body;
-  const sql = `INSERT INTO designations (company_id, department_id, designation_name, status) VALUES (?, ?, ?, ?)`;
+  const sql = `INSERT INTO designations (company_id, department_id, desgnation_name, status) VALUES (?, ?, ?, ?)`;
   db.query(sql, [company_id, department_id, name, status], (err, result) => {
     if (err) return res.status(500).json({error: err});
     res.json({ id: result.insertId });
@@ -215,7 +215,7 @@ router.post('/', (req, res) => {
  */
 router.put('/:id', (req, res) => {
   const { company_id, department_id, name, status } = req.body;
-  const sql = `UPDATE designations SET company_id = ?, department_id = ?, designation_name = ?, status = ? WHERE designation_id = ?`;
+  const sql = `UPDATE designations SET company_id = ?, department_id = ?, desgnation_name = ?, status = ? WHERE designation_id = ?`;
   db.query(sql, [company_id, department_id, name, status, req.params.id], (err) => {
     if (err) return res.status(500).json(err);
     res.json({ message: 'Designation updated' });
@@ -224,7 +224,7 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req,res)=>{
   const designation_id = req.params.id
-  const sql = `UPDATE designations SET visibility = false WHERE designation_id = ?`;
+  const sql = `UPDATE designations SET status = 'Inactive' WHERE designation_id = ?`;
   db.query(sql, [designation_id], (err) => {
     if (err) return res.status(500).json(err);
     res.json({ message: 'Designation updated' });

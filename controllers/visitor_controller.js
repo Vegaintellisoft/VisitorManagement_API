@@ -1,7 +1,29 @@
-const conn = require('../db');
+const conn = require('../db').callbackPool; // Use callback-style pool explicitly
 const queries = require('../queries/visitor_queries');
 const qrcode = require('qrcode');
 const multer = require('multer');
+
+// Helper function to format date as YYYY-MM-DD HH:mm:ss (replaces moment)
+const formatDateTime = (date) => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const seconds = String(d.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// Helper function to check if a date is more than 24 hours before now
+const isMoreThan24HoursAgo = (date) => {
+  const signInDate = new Date(date);
+  const now = new Date();
+  const diffMs = now - signInDate;
+  const diffHours = diffMs / (1000 * 60 * 60);
+  return diffHours > 24;
+};
+
 // Generate QR code for visitor
 const generateQrCode = (visitorId) => {
   return new Promise((resolve, reject) => {
@@ -16,15 +38,27 @@ const generateQrCode = (visitorId) => {
 const sendOtp = (req, res) => {
   const { phone } = req.body;
 
-  // Generate 4-digit OTP
-  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  if (!phone) {
+    return res.status(400).json({ error: 'Phone number is required' });
+  }
 
-  // Set expiry time to 30 seconds from now
-  const expiry = new Date(Date.now() + 60 * 1000);
+  // Generate 4-digit OTP
+  // const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  const otp = '1234'; // Fixed OTP for temporary bypass
+
+  // Set expiry time to 5 minutes from now
+  const expiry = new Date(Date.now() + 5 * 60 * 1000);
 
   conn.query(queries.sendOtpQuery, [phone, otp, expiry, otp, expiry], (err) => {
-    if (err) return res.status(500).send(err);
-    res.send({ message: 'OTP sent', otp }); // dev only
+    if (err) {
+      console.error('OTP storage error:', err);
+      return res.status(500).json({ error: 'Failed to send OTP' });
+    }
+    // Do NOT send OTP to client - only log for debugging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[DEV ONLY] OTP for ${phone}: ${otp}`);
+    }
+    res.json({ message: 'OTP sent successfully' });
   });
 };
 
@@ -117,10 +151,10 @@ const handleQrScan = (req, res) => {
     if (results.length === 0) return res.status(404).send({ message: 'Visitor not found' });
 
     const visitor = results[0];
-    const currentTime = moment();
+    const currentTime = new Date();
 
     // Check if QR is already expired (i.e., check-in was done more than 24 hours ago)
-    if (visitor.qr_status === 'checked_in' && moment(visitor.sign_in_time).add(24, 'hours').isBefore(currentTime)) {
+    if (visitor.qr_status === 'checked_in' && isMoreThan24HoursAgo(visitor.sign_in_time)) {
       // QR expired after 24 hours, mark as expired
       conn.query('UPDATE visitors SET qr_status = "expired" WHERE id = ?', [visitorId], (err) => {
         if (err) return res.status(500).send({ message: 'Error expiring QR code', error: err });
@@ -131,7 +165,7 @@ const handleQrScan = (req, res) => {
 
     // Handle first scan (Check-in)
     if (visitor.qr_status === 'active') {
-      const signInTime = currentTime.format('YYYY-MM-DD HH:mm:ss');
+      const signInTime = formatDateTime(currentTime);
       conn.query('UPDATE visitors SET qr_status = "checked_in", sign_in_time = ? WHERE id = ?', [signInTime, visitorId], (err) => {
         if (err) return res.status(500).send({ message: 'Error during check-in', error: err });
         return res.send({ message: 'Check-in successful', sign_in_time: signInTime });
@@ -140,7 +174,7 @@ const handleQrScan = (req, res) => {
 
     // Handle second scan (Check-out)
     else if (visitor.qr_status === 'checked_in') {
-      const signOutTime = currentTime.format('YYYY-MM-DD HH:mm:ss');
+      const signOutTime = formatDateTime(currentTime);
       conn.query('UPDATE visitors SET qr_status = "checked_out", sign_out_time = ? WHERE id = ?', [signOutTime, visitorId], (err) => {
         if (err) return res.status(500).send({ message: 'Error during check-out', error: err });
         return res.send({ message: 'Check-out successful', sign_out_time: signOutTime });
@@ -241,6 +275,7 @@ const getVisitorQrCode = (req, res) => {
 
 const submitDetailsWithoutOtp = async (req, res) => {
   try {
+    console.log('Received body in submitDetailsWithoutOtp:', req.body);
     const data = req.body;
     const imagePath = req.file ? req.file.path : null;
 

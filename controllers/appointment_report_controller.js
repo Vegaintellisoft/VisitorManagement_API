@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require('../db').callbackPool;
 const { getAppointmentsQuery } = require('../queries/appointment_report_queries');
 
 const getAllAppointments = (req, res) => {

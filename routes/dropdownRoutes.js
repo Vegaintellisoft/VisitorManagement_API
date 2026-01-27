@@ -185,7 +185,7 @@ const dropdownController = require('../controllers/dropdown_controller');
 
 /**
  * @swagger
- * /api/companies:
+ * /api/v1/public/dropdowns/companies:
  *   get:
  *     summary: Get list of active companies
  *     tags: [Dropdowns]
@@ -208,9 +208,28 @@ router.get('/companies', dropdownController.getCompanies);
 
 /**
  * @swagger
- * /api/departments:
+ * /api/v1/public/dropdowns/departments/{companyId}:
+ *   get:
+ *     summary: Get active departments by company ID (path parameter)
+ *     tags: [Dropdowns]
+ *     parameters:
+ *       - in: path
+ *         name: companyId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The company ID
+ *     responses:
+ *       200:
+ *         description: A list of active departments for a given company
+ */
+router.get('/departments/:companyId', dropdownController.getDepartmentsByCompanyId);
+
+/**
+ * @swagger
+ * /api/v1/public/dropdowns/departments:
  *   post:
- *     summary: Get active departments by company
+ *     summary: Get active departments by company (body parameter)
  *     tags: [Dropdowns]
  *     requestBody:
  *       required: true
@@ -226,25 +245,33 @@ router.get('/companies', dropdownController.getCompanies);
  *     responses:
  *       200:
  *         description: A list of active departments for a given company
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   department_id:
- *                     type: integer
- *                   dept_name:
- *                     type: string
  */
 router.post('/departments', dropdownController.getDepartmentsByCompany);
 
 /**
  * @swagger
- * /api/designations:
+ * /api/v1/public/dropdowns/designations/{departmentId}:
+ *   get:
+ *     summary: Get active designations by department ID (path parameter)
+ *     tags: [Dropdowns]
+ *     parameters:
+ *       - in: path
+ *         name: departmentId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The department ID
+ *     responses:
+ *       200:
+ *         description: A list of active designations
+ */
+router.get('/designations/:departmentId', dropdownController.getDesignationsByDepartmentId);
+
+/**
+ * @swagger
+ * /api/v1/public/dropdowns/designations:
  *   post:
- *     summary: Get active designations by department
+ *     summary: Get active designations by department (body parameter)
  *     tags: [Dropdowns]
  *     requestBody:
  *       required: true
@@ -257,31 +284,36 @@ router.post('/departments', dropdownController.getDepartmentsByCompany);
  *             properties:
  *               departmentId:
  *                 type: integer
- *                 description: Department ID
- *                 example: 2
  *     responses:
  *       200:
  *         description: A list of active designations
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   designation_id:
- *                     type: integer
- *                   desgnation_name:
- *                     type: string
  */
 router.post('/designations', dropdownController.getDesignationsByDepartment);
 
+/**
+ * @swagger
+ * /api/v1/public/dropdowns/employees/{designationId}:
+ *   get:
+ *     summary: Get active employees by designation ID (path parameter)
+ *     tags: [Dropdowns]
+ *     parameters:
+ *       - in: path
+ *         name: designationId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The designation ID
+ *     responses:
+ *       200:
+ *         description: A list of active employees for a given designation
+ */
+router.get('/employees/:designationId', dropdownController.getEmployeesByDesignationId);
 
 /**
  * @swagger
- * /api/employees:
+ * /api/v1/public/dropdowns/employees:
  *   post:
- *     summary: Get active employees by designation
+ *     summary: Get active employees by designation (body parameter)
  *     tags: [Dropdowns]
  *     requestBody:
  *       required: true
@@ -297,27 +329,14 @@ router.post('/designations', dropdownController.getDesignationsByDepartment);
  *     responses:
  *       200:
  *         description: A list of active employees for a given designation
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   employee_id:
- *                     type: integer
- *                   first_name:
- *                     type: string
- *                   last_name:
- *                     type: string
  */
 router.post('/employees', dropdownController.getEmployeesByDesignation);
 
 /**
  * @swagger
- * /api/purposes:
+ * /api/v1/public/dropdowns/purposes:
  *   get:
- *     summary: Get list of active purposes
+ *     summary: Get list of all purposes
  *     tags: [Dropdowns]
  *     responses:
  *       200:
@@ -336,5 +355,5 @@ router.post('/employees', dropdownController.getEmployeesByDesignation);
  */
 router.get('/purposes', dropdownController.getAllPurposes);
 
-
 module.exports = router;
+

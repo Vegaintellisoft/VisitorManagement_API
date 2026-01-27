@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require('../db').callbackPool;
 const queries = require('../queries/select_queries');
 
 exports.getCompanies = (req, res) => {

@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require('../db').callbackPool;
 const { checkVisitorQuery,
   insertOtpQuery,
   selectOtpQuery,
@@ -13,10 +13,11 @@ const { checkVisitorQuery,
   updateVisitorQrQuery } = require('../queries/appointment_queries');
 const { generateVisitorQr } = require('../utils/generate_qr');
 const sendOTP = require('../utils/sendEmail');
-const { storeOtp, verifyOtp } = require('../utils/otpstore');
 const qrUtil = require('../utils/generate_qr');
 
 exports.createAppointment = async (req, res) => {
+  console.log('Creating appointment with data:', req.body); // Debug log
+  
   const {
     first_name,
     last_name,
@@ -25,7 +26,6 @@ exports.createAppointment = async (req, res) => {
     gender,
     aadhar_no,
     address,
-    image,
     purpose_of_visit,
     appointment_date,
     appointment_time,
@@ -38,13 +38,33 @@ exports.createAppointment = async (req, res) => {
     remarks
   } = req.body;
 
+  // Handle uploaded image
+  const image = req.file ? req.file.filename : (req.body.image || null);
 
+  // Smart date formatting: handles both 'dd-mm-yyyy' and 'yyyy-mm-dd' (ISO format from HTML date input)
   function formatDate(dateString) {
-    const [day, month, year] = dateString.split('-');
-    return `${year}-${month}-${day}`;
+    if (!dateString) {
+      console.error('Date string is empty or undefined');
+      return null;
+    }
+    
+    // Check if it's already in ISO format (yyyy-mm-dd) - from HTML date input
+    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return dateString; // Already in correct MySQL format
+    }
+    
+    // Handle dd-mm-yyyy format
+    if (dateString.match(/^\d{2}-\d{2}-\d{4}$/)) {
+      const [day, month, year] = dateString.split('-');
+      return `${year}-${month}-${day}`;
+    }
+    
+    console.error('Unrecognized date format:', dateString);
+    return dateString; // Return as-is and let MySQL handle it
   }
 
   const formattedDate = formatDate(appointment_date);
+  console.log('Formatted date:', formattedDate); // Debug log
 
   const visitorData = [
     first_name,
@@ -56,13 +76,15 @@ exports.createAppointment = async (req, res) => {
     department_id,
     designation_id,
     whom_to_meet,
-    purpose_of_visit,
+    purpose_of_visit,  // This maps to 'purpose' column (purpose_id)
     aadhar_no,
-    address,
+    address || '',
     image || null,
-    1,
-    'active'
+    1,               // otp_verified
+    'active'         // qr_status
   ];
+
+  console.log('Visitor data array:', visitorData); // Debug log
 
 
   db.query(insertVisitorQuery, visitorData, async (err, result) => {

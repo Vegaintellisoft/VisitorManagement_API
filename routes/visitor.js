@@ -4,6 +4,12 @@ const visitorController = require('../controllers/visitor_controller');
 const multer = require('multer');
 const qrcode = require('qrcode');
 const { submitDetailsWithoutOtp } = require('../controllers/visitor_controller');
+const { 
+  visitorValidation, 
+  otpValidation, 
+  verifyOtpValidation 
+} = require('../middleware/validators');
+const { otpLimiter } = require('../middleware/rateLimiter');
 // QR code generation helper (returns a Promise)
 const generateQrCode = (visitorId) => {
   return new Promise((resolve, reject) => {
@@ -30,7 +36,7 @@ const upload = multer({ storage });
 
 /**
  * @swagger
- * /visitor/send-otp:
+ * /api/v1/visitors/send-otp:
  *   post:
  *     summary: Send OTP to a mobile number
  *     tags:
@@ -49,11 +55,11 @@ const upload = multer({ storage });
  *       200:
  *         description: OTP sent successfully
  */
-router.post('/send-otp', visitorController.sendOtp);
+router.post('/send-otp', otpLimiter, otpValidation, visitorController.sendOtp);
 
 /**
  * @swagger
- * /visitor/verify-otp:
+ * /api/v1/visitors/verify-otp:
  *   post:
  *     summary: Verify OTP for a mobile number
  *     tags:
@@ -75,11 +81,11 @@ router.post('/send-otp', visitorController.sendOtp);
  *       400:
  *         description: Invalid or expired OTP
  */
-router.post('/verify-otp', visitorController.verifyOtp);
+router.post('/verify-otp', otpLimiter, verifyOtpValidation, visitorController.verifyOtp);
 
 /**
  * @swagger
- * /visitor/all-visitors:
+ * /api/v1/visitors/all-visitors:
  *   get:
  *     summary: Retrieve all visitors
  *     tags:
@@ -124,7 +130,7 @@ router.get('/all-visitors', visitorController.getAllVisitors);
 
 /**
  * @swagger
- * /visitor-details:
+ * /api/v1/visitors/visitor-details:
  *   get:
  *     summary: Retrieve visitor details including check-in/out, status, and QR code
  *     tags:
@@ -169,7 +175,7 @@ router.get('/visitor-details', visitorController.getVisitorDetails);
 
 /**
  * @swagger
- * /visitor/submit-details:
+ * /api/v1/visitors/submit-details:
  *   post:
  *     summary: Submit visitor details and generate QR code
  *     tags:
@@ -228,11 +234,11 @@ router.get('/visitor-details', visitorController.getVisitorDetails);
  *                   type: string
  *                   example: https://yourdomain.com/qrcodes/visitor123.png
  */
-router.post('/submit-details', upload.single('image'), visitorController.submitDetails);
+router.post('/submit-details', upload.single('image'), visitorValidation, visitorController.submitDetails);
 
 /**
  * @swagger
- * /visitor/qr-scan:
+ * /api/v1/visitors/qr-scan:
  *   post:
  *     summary: Handle visitor QR code scan (Check-in/Check-out)
  *     tags:
@@ -299,7 +305,7 @@ router.put('/:id/status', visitorController.updateVisitorStatusController);
 
 /**
  * @swagger
- * /visitor/gen_card:
+ * /api/v1/visitors/gen_card:
  *   post:
  *     summary: Get QR code for a visitor by ID (only if qr_status is 'active')
  *     tags:
@@ -372,7 +378,7 @@ router.post('/gen_card', visitorController.getVisitorQrCode);
 
 /**
  * @swagger
- * /visitor/submit-without-otp:
+ * /api/v1/visitors/submit-without-otp:
  *   post:
  *     summary: Submit visitor details and generate QR code (no OTP verification)
  *     tags:
@@ -428,11 +434,11 @@ router.post('/gen_card', visitorController.getVisitorQrCode);
  *       500:
  *         description: Internal server error
  */
-router.post('/submit-without-otp', upload.single('image'), submitDetailsWithoutOtp);
+router.post('/submit-without-otp', upload.single('image'), visitorValidation, submitDetailsWithoutOtp);
 
 /**
  * @swagger
- * /visitor/update_visitor:
+ * /api/v1/visitors/update_visitor:
  *   post:
  *     summary: Update a visitor's information
  *     description: Updates visitor details including an optional image.
@@ -509,7 +515,7 @@ router.post('/update_visitor', upload.single('image'), visitorController.updateV
 
 /**
  * @swagger
- * /visitor/get_visitor:
+ * /api/v1/visitors/get_visitor:
  *   post:
  *     summary: Get visitor details by visitor_id
  *     requestBody:

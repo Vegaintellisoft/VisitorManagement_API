@@ -33,6 +33,6 @@ const { getAllAppointments } = require('../controllers/appointment_report_contro
  *                     type: string
  *                     format: time
  */
-router.get('/appointments_report', getAllAppointments);
+router.get('/', getAllAppointments);
 
 module.exports = router;

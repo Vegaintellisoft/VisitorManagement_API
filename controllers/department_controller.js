@@ -1,4 +1,5 @@
-const db = require("../db");
+const db = require("../db").callbackPool; // Use callback-style pool
+const dbPromise = require("../db").promise; // Use promise-based pool for async functions
 const queries = require("../queries/department_queries");
 
 exports.getAll = (req, res) => {
@@ -6,13 +7,13 @@ exports.getAll = (req, res) => {
     if (err) {
       return res.status(500).send({ message: 'Error fetching departments', error: err });
     }
-    res.status(200).json( results );
+    res.status(200).json(results);
   });
 };
 
-exports.getById = async (id) => {
+exports.getByIdAsync = async (id) => {
   try {
-    const [rows] = await db.promise().query(queries.getDepartmentById, [id]);
+    const [rows] = await dbPromise.query(queries.getDepartmentById, [id]);
     if (rows.length === 0) throw { status: 404, message: "Department not found" };
     return rows[0];
   } catch (error) {
@@ -31,7 +32,6 @@ exports.getById = (req, res) => {
     }
     res.status(200).json({ message: 'Department retrieved successfully', data: results[0] });
   });
-
 };
 
 exports.create = (req, res) => {

@@ -35,6 +35,6 @@ const { getAllVisitors } = require('../controllers/visitor_report_controller');
  *                     type: string
  *                     format: date-time
  */
-router.get('/visitors_reports', getAllVisitors);
+router.get('/', getAllVisitors);
 
 module.exports = router;

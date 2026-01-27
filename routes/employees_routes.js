@@ -2,10 +2,7 @@ const express = require('express');
 const router = express.Router();
 const employeeController = require('../controllers/employees_controller');
 const upload = require('../utils/upload'); // multer middleware
-// const express = require('express');
-// const router = express.Router();
-// const employeeController = require('../controllers/employees_controller');
-// const upload = require('../utils/upload'); // multer middleware
+const { employeeValidation } = require('../middleware/validators');
 
 /**
  * @swagger
@@ -16,7 +13,7 @@ const upload = require('../utils/upload'); // multer middleware
 
 /**
  * @swagger
- * /employees/add-employee:
+ * /api/v1/employees/add-employee:
  *   post:
  *     summary: Add a new employee
  *     tags: [Employees]
@@ -58,11 +55,12 @@ const upload = require('../utils/upload'); // multer middleware
  *       500:
  *         description: Server error
  */
-router.post('/add-employee', upload.single('image'), employeeController.addEmployee);
+
+router.post('/add-employee', upload.single('image'), employeeValidation, employeeController.addEmployee);
 
 /**
  * @swagger
- * /employees/update-employee/{id}:
+ * /api/v1/employees/update-employee/{id}:
  *   put:
  *     summary: Update an employee by ID
  *     tags: [Employees]
@@ -106,11 +104,11 @@ router.post('/add-employee', upload.single('image'), employeeController.addEmplo
  *       500:
  *         description: Server error
  */
-router.put('/update-employee/:id', upload.single('image'), employeeController.updateEmployee);
+router.put('/update-employee/:id', upload.single('image'), employeeValidation, employeeController.updateEmployee);
 
 /**
  * @swagger
- * /employees/get_all_employee:
+ * /api/v1/employees/get_all_employee:
  *   get:
  *     summary: Get all employees
  *     tags: [Employees]
@@ -124,7 +122,7 @@ router.get('/get_all_employee', employeeController.getAllEmployees);
 
 /**
  * @swagger
- * /employees/get_emp_id/{id}:
+ * /api/v1/employees/get_emp_id/{id}:
  *   get:
  *     summary: Get employee by ID
  *     tags: [Employees]
@@ -146,7 +144,7 @@ router.get('/get_emp_id/:id', employeeController.getEmployeeById);
 
 /**
  * @swagger
- * /employees/delete_emp_id/{id}:
+ * /api/v1/employees/delete_emp_id/{id}:
  *   delete:
  *     summary: Delete employee by ID
  *     tags: [Employees]

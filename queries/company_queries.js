@@ -1,10 +1,10 @@
 
 const getAllCompanies = `
-  SELECT * FROM companies WHERE status = 'active';
+  SELECT * FROM companies WHERE status = 'Active';
 `;
 
 const getCompanyById = `
- SELECT * FROM companies WHERE company_id = ? AND status = 'active';
+ SELECT * FROM companies WHERE company_id = ? AND status = 'Active';
 `;
 
 const createCompany = `

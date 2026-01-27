@@ -14,9 +14,10 @@ getRolesByModules = `SELECT m.module_name, GROUP_CONCAT(DISTINCT r.role_name SEP
                     FROM roles r  
                     JOIN role_permissions rp ON r.role_id = rp.role_id  
                     JOIN permissions p ON rp.permission_id = p.permission_id  
-                    JOIN modules m ON p.designated_module = m.module_id  
+                    JOIN modules m ON p.designated_module_id = m.module_id  
                     GROUP BY m.module_name;
                     `
+getRolePermissionIds = "SELECT permission_id FROM role_permissions WHERE role_id = ?;"
 module.exports = {
                     listModules, 
                     getModulePermissions,

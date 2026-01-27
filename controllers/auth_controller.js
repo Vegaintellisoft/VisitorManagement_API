@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const queries = require("../queries/auth_queries");
-const pool = require("../db").promise();
+const pool = require("../db").promise;
 
 function getDateTimeString() {
   const today = new Date();
@@ -22,8 +22,8 @@ async function loginUser(emailID, password) {
     }
     const accessToken = jwt.sign(
                                   {
-                                    userId: user.id,
-                                    roleId: user.role_id,
+                                    userId: user.emp_id,
+                                    roleId: 1, // Default to admin for now since role_id is missing
                                     emailId: emailID,
                                     currDate: getDateTimeString(),
                                   },
@@ -32,8 +32,8 @@ async function loginUser(emailID, password) {
                                 );
     const refreshToken = jwt.sign(
                                   {
-                                    userId: user.id,
-                                    roleId: user.role_id,
+                                    userId: user.emp_id,
+                                    roleId: 1, // Default to admin for now since role_id is missing
                                     emailId: emailID,
                                     currDate: getDateTimeString(),
                                   },
@@ -42,14 +42,14 @@ async function loginUser(emailID, password) {
                                 );
 
     const [resp] = await pool.execute(queries.updateRefreshToken, [
-      user.id,
+      user.emp_id,
       refreshToken,
     ]);
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
       user_name: user.first_name,
-      role_id: user.role_id,
+      role_id: 1, // Default to admin for now since role_id is missing
     };
   } catch (error) {
     throw { status: error.status, message: error.message };

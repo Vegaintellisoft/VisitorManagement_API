@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const appointmentController = require('../controllers/appointment_controller');
+const { appointmentValidation, otpValidation, verifyOtpValidation } = require('../middleware/validators');
 
 /**
  * @swagger
- * /api/appointments/send-otp:
+ * /api/v1/appointments/send-otp:
  *   post:
  *     summary: Send OTP to visitor via email or phone
  *     tags: [Appointments]
@@ -37,11 +38,24 @@ const appointmentController = require('../controllers/appointment_controller');
  *       500:
  *         description: Database error
  */
-router.post('/send-otp', appointmentController.sendOtp);
+const multer = require('multer');
+
+// Configure Multer Storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+const upload = multer({ storage });
+
+router.post('/send-otp', otpValidation, appointmentController.sendOtp);
 
 /**
  * @swagger
- * /api/appointments/verify-otp:
+ * /api/v1/appointments/verify-otp:
  *   post:
  *     summary: Verify OTP and fetch visitor appointment info
  *     tags: [Appointments]
@@ -95,11 +109,11 @@ router.post('/send-otp', appointmentController.sendOtp);
  *       500:
  *         description: Database error
  */
-router.post('/verify-otp', appointmentController.verifyOtp);
+router.post('/verify-otp', verifyOtpValidation, appointmentController.verifyOtp);
 
 /**
  * @swagger
- * /api/appointments/create:
+ * /api/v1/appointments/create:
  *   post:
  *     summary: Create visitor and appointment, generate QR
  *     tags: [Appointments]
@@ -152,11 +166,11 @@ router.post('/verify-otp', appointmentController.verifyOtp);
  *       500:
  *         description: Server error
  */
-router.post('/create', appointmentController.createAppointment);
+router.post('/create', upload.single('image'), appointmentValidation, appointmentController.createAppointment);
 
 /**
  * @swagger
- * /api/appointments/{id}:
+ * /api/v1/appointments/{id}:
  *   put:
  *     summary: Update an existing appointment
  *     tags: [Appointments]
@@ -206,11 +220,11 @@ router.post('/create', appointmentController.createAppointment);
  *       500:
  *         description: Server error
  */
-router.put('/:id', appointmentController.updateAppointment);
+router.put('/:id', appointmentValidation, appointmentController.updateAppointment);
 
 /**
  * @swagger
- * /api/appointments/fetch_appointment:
+ * /api/v1/appointments/fetch_appointment:
  *   post:
  *     summary: Fetch appointment details by appointment ID
  *     tags: [Appointments]
@@ -236,7 +250,7 @@ router.post('/fetch_appointment', appointmentController.getAppointmentById);
 
 /**
  * @swagger
- * /api/appointments/table-data:
+ * /api/v1/appointments/table-data:
  *   get:
  *     summary: Get appointment table data
  *     description: Returns a list of visitor appointments with name, email, phone, date, purpose, and remarks.
@@ -283,7 +297,7 @@ router.get('/table-data', appointmentController.getAppointmentsTableData);
 
 /**
  * @swagger
- * /api/appointments/fetch_remarks:
+ * /api/v1/appointments/fetch_remarks:
  *   post:
  *     summary: Get remarks by appointment ID
  *     tags: [Appointments]

@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const db = require('../db'); // adjust path as needed
+const db = require('../db').callbackPool; // Use callback-style pool explicitly
 const {
   insertEmployeeQuery,
   updateEmployeeQuery,

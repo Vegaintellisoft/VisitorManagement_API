@@ -3,7 +3,7 @@
 const getActiveCompanies = `
   SELECT company_id, company_name 
   FROM companies 
-  WHERE visibility=true;
+  WHERE status='Active';
 `;
 
 // Get active departments by active company
@@ -11,16 +11,16 @@ const getDepartmentsByCompany = `
   SELECT d.department_id, d.dept_name
   FROM departments d
   JOIN companies c ON d.company_id = c.company_id
-  WHERE d.company_id = ? AND c.visibility=true AND d.visibility=true;
+  WHERE d.company_id = ? AND c.status='Active' AND d.status='Active';
 `;
 
 // Get active designations by department where company is active
 const getDesignationsByDepartment = `
-  SELECT des.designation_id, des.desgnation_name
+  SELECT des.designation_id, des.desgnation_name as designation_name
   FROM designations des
   JOIN departments d ON des.department_id = d.department_id
   JOIN companies c ON des.company_id = c.company_id
-  WHERE des.department_id = ? AND c.visibility=true AND des.visibility=true AND d.visibility=true;
+  WHERE des.department_id = ? AND c.status='Active' AND des.status='Active' AND d.status='Active';
 `;
 
 // Get active employees by designation where company is active
@@ -29,7 +29,7 @@ const getEmployeesByDesignation = `
   FROM employees e
   JOIN designations des ON e.designation_id = des.designation_id
   JOIN companies c ON e.company_id = c.company_id
-  WHERE e.designation_id = ? AND c.visibility=true AND e.visibility=true AND des.visibility=true;
+  WHERE e.designation_id = ? AND c.status='Active' AND e.status='Active' AND des.status='Active';
 `;
 const getAllPurposes = `
  SELECT purpose_id, purpose AS purpose FROM purpose; 

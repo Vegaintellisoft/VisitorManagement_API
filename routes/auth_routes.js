@@ -1,11 +1,12 @@
 const auth_methods = require("../controllers/auth_controller");
 const express = require("express");
+const { loginValidation } = require("../middleware/validators");
 
 const router = express.Router();
 
 /**
  * @swagger
- * /api/auth/refresh:
+ * /api/v1/auth/refresh:
  *   post:
  *     summary: Refresh the user's access token
  *     description: Uses a refresh token stored in cookies to generate a new access token
@@ -55,7 +56,7 @@ router.post("/refresh", async (req, res) => {
 
 /**
  * @swagger
- * /api/auth/login:
+ * /api/v1/auth/login:
  *   post:
  *     summary: Authenticate user and return access & refresh tokens
  *     description: Verifies user credentials. On success, returns an access token and sets a refresh token in an HTTP-only cookie.
@@ -132,7 +133,7 @@ router.post("/refresh", async (req, res) => {
  *                   example: Login Failed
  */
 
-router.post("/login", async (req, res) => {
+router.post("/login", loginValidation, async (req, res) => {
   const { emailId, password } = req.body;
   try {
     const data = await auth_methods.loginUser(emailId, password);
@@ -153,6 +154,7 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Login Error:", error);
     res.status(error.status || 500).json({ error: error.message });
   }
 });
@@ -160,7 +162,7 @@ router.post("/login", async (req, res) => {
 
 /**
  * @swagger
- * /api/auth/logout:
+ * /api/v1/auth/logout:
  *    post:
  *      summary: Logout user and clear cookie and delete refreshToken
  *      description: The refresh token is deleted from the database and the httponly cookie carrying the refreshToken is cleared
@@ -215,7 +217,7 @@ router.post("/logout", async (req, res) => {
   } catch (error) {
     res
       .status(error.status || 500)
-      .json({ error: error.message, result: False });
+      .json({ error: error.message, result: false });
   }
 });
 
