@@ -6,8 +6,8 @@ const qrcode = require('qrcode');
 const { submitDetailsWithoutOtp } = require('../controllers/visitor_controller');
 const { 
   visitorValidation, 
-  otpValidation, 
-  verifyOtpValidation 
+  visitorOtpValidation, 
+  visitorVerifyOtpValidation 
 } = require('../middleware/validators');
 const { otpLimiter } = require('../middleware/rateLimiter');
 // QR code generation helper (returns a Promise)
@@ -55,7 +55,7 @@ const upload = multer({ storage });
  *       200:
  *         description: OTP sent successfully
  */
-router.post('/send-otp', otpLimiter, otpValidation, visitorController.sendOtp);
+router.post('/send-otp', otpLimiter, visitorOtpValidation, visitorController.sendOtp);
 
 /**
  * @swagger
@@ -81,7 +81,7 @@ router.post('/send-otp', otpLimiter, otpValidation, visitorController.sendOtp);
  *       400:
  *         description: Invalid or expired OTP
  */
-router.post('/verify-otp', otpLimiter, verifyOtpValidation, visitorController.verifyOtp);
+router.post('/verify-otp', otpLimiter, visitorVerifyOtpValidation, visitorController.verifyOtp);
 
 /**
  * @swagger

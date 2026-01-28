@@ -33,7 +33,33 @@ const insertIntoVisitorMain = `
     otp, otp_verified, qr_status
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
 `;
-const getAllVisitorsQuery = 'SELECT * FROM visitors';
+
+
+// const getAllVisitorsQuery = 'SELECT * FROM visitors';
+const getAllVisitorsQuery = `
+    SELECT
+    v.visitor_id AS visitor_id,
+    CONCAT(v.first_name, ' ', v.last_name) AS first_name,
+    v.email AS email,
+    v.phone AS phone,
+    v.gender AS gender,
+    v.company_id,
+    v.department_id,
+    v.designation_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS whom_to_meet,
+    v.purpose,
+    v.aadhar_no,
+    v.address,
+    v.image,
+    v.status,
+    v.qr_code,
+    v.sign_in_time ,
+    v.sign_out_time 
+FROM visitors v
+LEFT JOIN employees e 
+    ON v.whom_to_meet = e.emp_id
+ORDER BY v.sign_in_time DESC;
+`;
 
 const getVisitorDetailsQuery = `
     SELECT

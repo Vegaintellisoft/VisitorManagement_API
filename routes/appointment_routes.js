@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const appointmentController = require('../controllers/appointment_controller');
-const { appointmentValidation, otpValidation, verifyOtpValidation } = require('../middleware/validators');
+const { appointmentValidation, appointmentOtpValidation, appointmentVerifyOtpValidation } = require('../middleware/validators');
 
 /**
  * @swagger
@@ -18,25 +18,9 @@ const { appointmentValidation, otpValidation, verifyOtpValidation } = require('.
  *             properties:
  *               contact:
  *                 type: string
- *                 description: Email or phone number
- *                 example: user@example.com
  *     responses:
  *       200:
  *         description: OTP sent successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: OTP generated and sent
- *       400:
- *         description: Phone number or email is required
- *       404:
- *         description: No visitor found with this contact
- *       500:
- *         description: Database error
  */
 const multer = require('multer');
 
@@ -51,7 +35,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post('/send-otp', otpValidation, appointmentController.sendOtp);
+router.post('/send-otp', appointmentOtpValidation, appointmentController.sendOtp);
 
 /**
  * @swagger
@@ -68,48 +52,13 @@ router.post('/send-otp', otpValidation, appointmentController.sendOtp);
  *             properties:
  *               contact:
  *                 type: string
- *                 description: Email or phone number
- *                 example: user@example.com
  *               otp:
  *                 type: string
- *                 description: OTP received
- *                 example: "1234"
  *     responses:
  *       200:
  *         description: Appointment and visitor data returned
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 visitor_name:
- *                   type: string
- *                   example: John Doe
- *                 appointment_id:
- *                   type: integer
- *                   example: 101
- *                 image:
- *                   type: string
- *                   example: https://example.com/image.jpg
- *                 whom_to_meet:
- *                   type: string
- *                   example: Jane Smith
- *                 purpose:
- *                   type: string
- *                   example: Business Meeting
- *                 qr_code:
- *                   type: string
- *                   example: qr-code-string
- *       400:
- *         description: Contact and OTP are required
- *       401:
- *         description: Invalid or expired OTP
- *       404:
- *         description: OTP not found or no appointment found
- *       500:
- *         description: Database error
  */
-router.post('/verify-otp', verifyOtpValidation, appointmentController.verifyOtp);
+router.post('/verify-otp', appointmentVerifyOtpValidation, appointmentController.verifyOtp);
 
 /**
  * @swagger

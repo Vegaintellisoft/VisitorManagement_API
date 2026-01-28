@@ -51,9 +51,19 @@ const getAppointmentsTableDataQuery = `
     v.email,
     v.phone,
     a.appointment_date,
-    a.purpose_of_visit AS purpose,
+    a.appointment_time,
+    a.duration,
+    k.company_name AS company_name,
+    CONCAT(e.first_name, ' ', e.last_name )AS employee_name,
+    p.purpose AS purpose,
     a.remarks
   FROM appointment_scheduling a
+  LEFT JOIN employees e 
+    ON a.whom_to_meet = e.emp_id
+  LEFT JOIN purpose p 
+    ON a.purpose_of_visit = p.purpose_id
+  LEFT JOIN companies k 
+    ON a.company_id = k.company_id
   JOIN visitors v ON a.visitor_id = v.visitor_id
   ORDER BY a.appointment_date DESC
 `;
